@@ -15,6 +15,8 @@ import java.net.InetSocketAddress;
 
 import android.os.Handler;
 import android.os.Message;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LFXSocketUDP extends LFXSocketGeneric
 {	
@@ -76,7 +78,7 @@ public class LFXSocketUDP extends LFXSocketGeneric
                 } 
                 catch( Exception e) 
                 {
-                    e.printStackTrace();
+                    Logger.getLogger(MessageSendTask.class.getName()).log(Level.SEVERE, null, e);
                     close();
                 }
         	}
@@ -169,12 +171,11 @@ public class LFXSocketUDP extends LFXSocketGeneric
         		 }
         		 catch( Exception e)
         		 {
-        			 e.printStackTrace();
-        			 System.out.println( "Error Starting server. IP: " + ipAddress.toString() + ", Port: " + port);
+        			 Logger.getLogger(MessageSendTask.class.getName()).log(Level.SEVERE, "Error Starting server. IP: " + ipAddress.toString() + ", Port: " + port, e);
         			 updSocket = null;
         		 }
             		 
-        		 System.out.println( "UDP SOCKET MONITOR IS ONLINE - ip: " + ipAddress.toString() + ", port: " + port);
+                         Logger.getLogger(UDPReceiveTask.class.getName()).log(Level.INFO, "UDP SOCKET MONITOR IS ONLINE - ip: " + ipAddress.toString() + ", port: " + port);
         		 
             	 if( serverStarted)
             	 {
@@ -200,14 +201,14 @@ public class LFXSocketUDP extends LFXSocketGeneric
              } 
              catch( Exception e) 
              {
-            	 System.out.println( "UDP Socket has been closed.");
+                 Logger.getLogger(UDPReceiveTask.class.getName()).log(Level.INFO, "UDP Socket has been closed.");
              } 
  
              close();
              
              publishDisconnected();
              
-             System.out.println( "UDP Socket Monitor Ended Execution.");
+                    Logger.getLogger(UDPReceiveTask.class.getName()).log(Level.INFO, "UDP Socket Monitor Ended Execution.");
 		}
     	
     }

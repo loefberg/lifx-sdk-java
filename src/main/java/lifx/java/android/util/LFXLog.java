@@ -8,6 +8,9 @@
 
 package lifx.java.android.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class LFXLog
 {
 	private static boolean info = true;
@@ -20,7 +23,8 @@ public class LFXLog
 	{
 		if( info)
 		{
-			System.out.println( "Error: " + input);
+			//System.out.println( "Error: " + input);
+                    Logger.getLogger(LFXLog.class.getName()).log(Level.INFO, input);
 		}
 	}
 	
@@ -28,7 +32,8 @@ public class LFXLog
 	{
 		if( error)
 		{
-			System.out.println( "Error: " + input);
+			//System.out.println( "Error: " + input);
+                    Logger.getLogger(LFXLog.class.getName()).log(Level.SEVERE, input);
 		}
 	}
 	
@@ -36,7 +41,8 @@ public class LFXLog
 	{
 		if( warning)
 		{
-			System.out.println( "Warning: " + input);
+			//System.out.println( "Warning: " + input);
+                    Logger.getLogger(LFXLog.class.getName()).log(Level.WARNING, input);
 		}
 	}
 	
@@ -44,7 +50,7 @@ public class LFXLog
 	{
 		if( verbose)
 		{
-			System.out.println( "Verbose: " + input);
+                    Logger.getLogger(LFXLog.class.getName()).log(Level.FINE, input);
 		}
 	}
 	
@@ -52,17 +58,19 @@ public class LFXLog
 	{
 		if( debug)
 		{
-			System.out.println( "Debug: " + input);
+                    Logger.getLogger(LFXLog.class.getName()).log(Level.FINER, input);
 		}
 	}
 	
 	public static void LFXMessage( byte[] data)
 	{
-		System.out.println( "Size: " + data.length);
+                StringBuilder builder = new StringBuilder();
+		builder.append( "Size: " + data.length).append("\n");
 		
 		for( int i = 0; i < data.length; i++)
 		{
-			System.out.printf( "0x%02X ", data[i]);
+			builder.append(String.format( "0x%02X ", data[i]));
 		}
+                Logger.getLogger(LFXLog.class.getName()).log(Level.INFO, builder.toString());
 	}
 }

@@ -10,6 +10,8 @@ package lifx.java.android.entities.internal;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.entities.internal.LFXBinaryTargetID.LFXBinaryTargetType;
 import lifx.java.android.entities.internal.LFXBinaryTargetID.TagField;
@@ -199,23 +201,23 @@ public class LFXMessage
 		} 
 		catch (InstantiationException e) 
 		{
-			e.printStackTrace();
+                    Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);			
 		} 
 		catch (IllegalAccessException e) 
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		} 
 		catch (IllegalArgumentException e) 
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		} 
 		catch (InvocationTargetException e) 
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		} 
 		catch (NoSuchMethodException e) 
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		}
 		
 		return payload;
@@ -363,19 +365,19 @@ public class LFXMessage
 		} 
 		catch( IllegalAccessException e)
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		} 
 		catch( IllegalArgumentException e)
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		} 
 		catch( NoSuchMethodException e)
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		} 
 		catch( InvocationTargetException e)
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXMessage.class.getName()).log(Level.SEVERE, null, e);
 		}
 		
 		return (payloadLength + prePayloadLength);

@@ -18,6 +18,8 @@ package lifx.java.android.entities.internal.structle;
 import java.util.HashMap;
 
 import android.annotation.SuppressLint;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.entities.internal.structle.StructleTypes.Bool8;
 import lifx.java.android.entities.internal.structle.StructleTypes.Float32;
@@ -435,8 +437,8 @@ public class LxProtocolWifi
   		interfacetype.printValue( "interfacetype");			// Field: interfacetype - Structle::Uint8 byte offset: 22
   		status.printValue( "status");			// Field: status - Structle::Uint8 byte offset: 22
   		ipv4.printValue( "ipv4");			// Field: ipv4 - Structle::Uint32 byte offset: 22
-  		System.out.println( "Byte Array Print not currently supported");
-    		}
+                    Logger.getLogger(State.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
+                }
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
   		, UInt8  interfacetype
@@ -824,8 +826,10 @@ public class LxProtocolWifi
     		public void printMessageData()
     		{
   		interfacetype.printValue( "interfacetype");			// Field: interfacetype - Structle::Uint8 byte offset: 98
-  		System.out.println( ssid);			// Field: ssid - Structle::String byte offset: 98
-  		System.out.println( pass);			// Field: pass - Structle::String byte offset: 98
+//  		System.out.println( ssid);			// Field: ssid - Structle::String byte offset: 98
+//  		System.out.println( pass);			// Field: pass - Structle::String byte offset: 98
+                    Logger.getLogger(SetAccessPoint.class.getName()).log(Level.INFO, ssid);
+                    Logger.getLogger(SetAccessPoint.class.getName()).log(Level.INFO, pass);
   		security.printValue( "security");			// Field: security - Structle::Uint8 byte offset: 98
     		}
     		
@@ -1152,7 +1156,8 @@ public class LxProtocolWifi
     		public void printMessageData()
     		{
   		interfacetype.printValue( "interfacetype");			// Field: interfacetype - Structle::Uint8 byte offset: 38
-  		System.out.println( ssid);			// Field: ssid - Structle::String byte offset: 38
+  		//System.out.println( ssid);			// Field: ssid - Structle::String byte offset: 38
+                    Logger.getLogger(StateAccessPoint.class.getName()).log(Level.INFO, ssid);
   		security.printValue( "security");			// Field: security - Structle::Uint8 byte offset: 38
   		strength.printValue( "strength");				// Field: strength - Structle::Int16 byte offset: 38
   		channel.printValue( "channel");			// Field: channel - Structle::Uint16 byte offset: 38

@@ -18,6 +18,8 @@ package lifx.java.android.entities.internal.structle;
 import java.util.HashMap;
 
 import android.annotation.SuppressLint;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.entities.internal.structle.StructleTypes.Bool8;
 import lifx.java.android.entities.internal.structle.StructleTypes.Float32;
@@ -185,8 +187,9 @@ public class LxProtocolWan
     		
     		public void printMessageData()
     		{
-  		System.out.println( user);			// Field: user - Structle::String byte offset: 64
-  		System.out.println( pass);			// Field: pass - Structle::String byte offset: 64
+  		//System.out.println( user);			// Field: user - Structle::String byte offset: 64
+  		//System.out.println( pass);			// Field: pass - Structle::String byte offset: 64
+                    Logger.getLogger(ConnectPlain.class.getName()).log(Level.INFO, pass);
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
@@ -394,7 +397,7 @@ public class LxProtocolWan
     		
     		public void printMessageData()
     		{
-  		System.out.println( "Byte Array Print not currently supported");
+                    Logger.getLogger(ConnectKey.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
@@ -520,7 +523,7 @@ public class LxProtocolWan
     		
     		public void printMessageData()
     		{
-  		System.out.println( "Byte Array Print not currently supported");
+  		Logger.getLogger(ConnectKey.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
@@ -653,8 +656,7 @@ public class LxProtocolWan
     		
     		public void printMessageData()
     		{
-  		System.out.println( "Byte Array Print not currently supported");
-  		System.out.println( "Byte Array Print not currently supported");
+                Logger.getLogger(ConnectKey.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
   		device.printValue( "device");			// Field: device - Structle::Bool byte offset: 15
     		}
     		
@@ -832,8 +834,7 @@ public class LxProtocolWan
     		
     		public void printMessageData()
     		{
-  		System.out.println( "Byte Array Print not currently supported");
-  		System.out.println( "Byte Array Print not currently supported");
+                Logger.getLogger(ConnectKey.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
   		device.printValue( "device");			// Field: device - Structle::Bool byte offset: 15
     		}
     		
@@ -1011,9 +1012,8 @@ public class LxProtocolWan
     		
     		public void printMessageData()
     		{
-  		System.out.println( "Byte Array Print not currently supported");
-  		System.out.println( "Byte Array Print not currently supported");
-  		device.printValue( "device");			// Field: device - Structle::Bool byte offset: 15
+                    Logger.getLogger(ConnectKey.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
+                    device.printValue( "device");			// Field: device - Structle::Bool byte offset: 15
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset

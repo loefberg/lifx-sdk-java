@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.entities.internal.LFXGatewayDescriptor;
 import lifx.java.android.entities.internal.LFXMessage;
@@ -94,12 +96,12 @@ public class LFXLANTransportManager extends LFXTransportManager implements LFXGa
 	{
 		if( enabled)
 		{
-			System.out.println( "Connection State did change called.");
+                        Logger.getLogger(LFXLANTransportManager.class.getName()).log(Level.INFO, "Connection State did change called.");
 			
 			boolean newIsConnected = false;
 			for( LFXGatewayConnection aGatewayConnection : gatewayConnections.values())
 			{
-				System.out.println( aGatewayConnection.getGatewayDescriptor().toString() + " : " +  aGatewayConnection.getConnectionState().toString());
+                                Logger.getLogger(LFXLANTransportManager.class.getName()).log(Level.INFO, aGatewayConnection.getGatewayDescriptor().toString() + " : " +  aGatewayConnection.getConnectionState().toString());
 				
 				if( aGatewayConnection.getConnectionState() == LFXGatewayConnectionState.CONNECTED)
 				{

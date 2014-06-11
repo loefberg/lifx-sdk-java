@@ -11,6 +11,8 @@ package lifx.java.android.network_context.internal.transport_manager.lan.gateway
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.entities.internal.LFXBinaryPath;
 import lifx.java.android.entities.internal.LFXGatewayDescriptor;
@@ -159,7 +161,7 @@ public class LFXGatewayDiscoveryController
 	
 	public void configureTimerForDiscoveryMode( LFXGatewayDiscoveryMode discoveryMode)
 	{
-		System.out.println( "DISCOVERYMODE: " + discoveryMode);
+                Logger.getLogger(LFXGatewayDiscoveryController.class.getName()).log(Level.INFO, "DISCOVERYMODE: " + discoveryMode);
 		
 		long duration = 1000;
 		switch( discoveryMode)
@@ -178,7 +180,7 @@ public class LFXGatewayDiscoveryController
 			discoveryTimer.purge();
 		}
 
-		System.out.println( "Making Discovery Timer task. Period: " + duration);
+                Logger.getLogger(LFXGatewayDiscoveryController.class.getName()).log(Level.INFO, "Making Discovery Timer task. Period: " + duration);
 		discoveryTimer = LFXTimerUtils.getTimerTaskWithPeriod( getDiscoverTimerTask(), duration, false);
 	}
 

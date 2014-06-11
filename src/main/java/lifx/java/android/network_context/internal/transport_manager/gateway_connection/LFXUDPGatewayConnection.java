@@ -15,6 +15,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.constant.LFXSDKConstants;
 import lifx.java.android.entities.internal.LFXGatewayDescriptor;
@@ -128,7 +130,7 @@ public class LFXUDPGatewayConnection extends LFXGatewayConnection implements Soc
 		} 
 		catch( UnknownHostException e)
 		{
-			e.printStackTrace();
+                        Logger.getLogger(LFXUDPGatewayConnection.class.getName()).log(Level.SEVERE, null, e);
 		}
 	}
 
@@ -179,7 +181,7 @@ public class LFXUDPGatewayConnection extends LFXGatewayConnection implements Soc
 		} 
 		catch( UnknownHostException e)
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXUDPGatewayConnection.class.getName()).log(Level.SEVERE, null, e);
 		}
 	}
 
@@ -208,11 +210,12 @@ public class LFXUDPGatewayConnection extends LFXGatewayConnection implements Soc
 			}
 			
 			LFXLog.warn( "UDP " + getGatewayDescriptor().getHost() + " Message Outbox backlog is " + messageOutbox.size());
-			for( String aKey : types.keySet())
+			StringBuilder builder = new StringBuilder();
+                        for( String aKey : types.keySet())
 			{
-				System.out.print( aKey + ": " + types.get( aKey) + ", ");
+				builder.append( aKey + ": " + types.get( aKey) + ", ");
 			}
-			System.out.println();
+                        Logger.getLogger(LFXUDPGatewayConnection.class.getName()).log(Level.INFO, builder.toString());
 			
 		}
 	}
@@ -249,7 +252,7 @@ public class LFXUDPGatewayConnection extends LFXGatewayConnection implements Soc
 		} 
 		catch( UnknownHostException e)
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXUDPGatewayConnection.class.getName()).log(Level.SEVERE, null, e);
 		}
 		
 		if( hostAddress == null)

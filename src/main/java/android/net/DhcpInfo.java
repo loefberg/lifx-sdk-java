@@ -12,31 +12,19 @@ import java.net.InetAddress;
  * @author Richard
  */
 public class DhcpInfo {
-    private final String broadcast;
+    private final String broadcastHostAddress;
     private final byte[] broadcastAddr;
     
-    public DhcpInfo(String broadcast, byte[] broadcastAddr) {
-        this.broadcast = broadcast;
-        this.broadcastAddr = broadcastAddr;
+    public DhcpInfo(InetAddress broadcast) {
+        this.broadcastHostAddress = broadcast.getHostAddress();
+        this.broadcastAddr = broadcast.getAddress();
     }
     
-    public String getBroadcast() {
-        return broadcast;
+    public String getBroadcastHostAddress() {
+        return broadcastHostAddress;
     }
     
     public byte[] getBroadcastAddress() {
         return broadcastAddr;
     }
-    
-    
-//    public final int ipAddress;
-//    public final int netmask;
-//
-//    public DhcpInfo(int ipAddress, int netmask) {
-//        this.ipAddress = ipAddress;
-//        this.netmask = netmask;
-//    }
-
-
-
 }

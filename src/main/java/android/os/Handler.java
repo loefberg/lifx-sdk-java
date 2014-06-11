@@ -29,7 +29,7 @@ public class Handler {
     }
 
     public void sendMessage(final Message msg) {
-        looper.getExecutor().submit(new Runnable() {
+        looper.submit(new Runnable() {
             @Override
             public void run() {
                 handleMessage(msg);
@@ -37,18 +37,17 @@ public class Handler {
         });
     }
 
-    public void post(Runnable task) {
-        looper.getExecutor().submit(task);
+    public void post(Runnable task) {        
+        looper.submit(task);
     }
 
     public void postDelayed(final Runnable task, long delay) {
-        Timer timer = new Timer();
+        Timer timer = new Timer(true);
         timer.schedule(new TimerTask() {
             @Override
-            public void run() {
-                looper.getExecutor().submit(task);
+            public void run() {                
+                looper.submit(task); 
             }
         }, delay);
     }
-    
 }

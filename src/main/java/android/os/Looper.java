@@ -25,12 +25,20 @@ public class Looper {
     public static Looper getMainLooper() {
         return looper;
     }
-    
-    public ExecutorService getExecutor() {
-        return executor;
-    }
+
     
     public void quit() {
+        try {
+            // we have to sleep for a while to let the disconnect
+            // packages get out there
+            Thread.sleep(500);
+        } catch(InterruptedException ex) { 
+            // oh well never mind                     
+        }
         executor.shutdown();
+    }
+    
+    protected void submit(Runnable runnable) {
+        executor.submit(runnable);
     }
 }

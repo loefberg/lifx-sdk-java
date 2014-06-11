@@ -8,11 +8,14 @@
 
 package lifx.java.android.network_context;
 
+import android.os.Looper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.client.LFXClient;
 import lifx.java.android.constant.LFXSDKConstants;
@@ -356,8 +359,8 @@ public class LFXNetworkContext implements LFXTransportManagerListener
 
 	public void logEverything()
 	{
-		System.out.println( "Log Everything Called.");
-	}
+            Logger.getLogger(LFXNetworkContext.class.getName()).log(Level.INFO, "Log Everything Called.");
+        }
 
 	public void sendMessage( LFXMessage message)
 	{
@@ -430,6 +433,8 @@ public class LFXNetworkContext implements LFXTransportManagerListener
 		}
 		
 		transportManager.disconnect();
+                
+                Looper.getMainLooper().quit();
 	}
 	
 	public void addLightToTaggedLightCollection( LFXLight light, LFXTaggedLightCollection taggedLightCollection)

@@ -17,6 +17,8 @@ package lifx.java.android.entities.internal.structle;
 
 import android.annotation.SuppressLint;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.entities.internal.structle.StructleTypes.Bool8;
 import lifx.java.android.entities.internal.structle.StructleTypes.Float32;
@@ -1570,7 +1572,8 @@ public class LxProtocolLight
   			color.printMessageData();		// Field: color - Lx::Protocol::Light::Hsbk byte offset: 52
   		dim.printValue( "dim");				// Field: dim - Structle::Int16 byte offset: 52
   		power.printValue( "power");			// Field: power - Structle::Uint16 byte offset: 52
-  		System.out.println( label);			// Field: label - Structle::String byte offset: 52
+  		//System.out.println( label);			// Field: label - Structle::String byte offset: 52
+                    Logger.getLogger(State.class.getName()).log(Level.INFO, label);
   		tags.printValue( "tags");			// Field: tags - Structle::Uint64 byte offset: 52
     		}
     		

@@ -39,10 +39,7 @@ public class WifiManager {
         for(InterfaceAddress ifaceAddr: iface.getInterfaceAddresses()) {
             InetAddress addr = ifaceAddr.getAddress();
             if(addr instanceof Inet4Address) {
-                //return new DhcpInfo(pack(addr.getAddress()), ifaceAddr.getNetworkPrefixLength());
-                //return new DhcpInfo(pack(addr.getAddress()), 0);
-                InetAddress broadcast = ifaceAddr.getBroadcast();
-                return new DhcpInfo(broadcast.getHostAddress(), broadcast.getAddress());
+                return new DhcpInfo(ifaceAddr.getBroadcast());
             }
         }        
         

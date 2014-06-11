@@ -15,6 +15,8 @@ package lifx.java.android.entities.internal.structle;
 	Start Of File: Lx.java 
 */
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import lifx.java.android.entities.internal.structle.StructleTypes.LxProtocolTypeBase;
 import lifx.java.android.entities.internal.structle.StructleTypes.ProtocolField;
 import lifx.java.android.entities.internal.structle.StructleTypes.RoutingField;
@@ -320,8 +322,7 @@ public class Lx
   		size.printValue( "size");			// Field: size - Structle::Uint16 byte offset: 24
   		_protocol.printValue( "_protocol");				// Field: _protocol - Lx::ProtocolField byte offset: 24
   		reserved.printValue( "reserved");			// Field: reserved - Structle::Uint32 byte offset: 24
-  		System.out.println( "Byte Array Print not currently supported");
-  		System.out.println( "Byte Array Print not currently supported");
+                Logger.getLogger(FrameAddress.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
   		_routing.printValue( "_routing");				// Field: _routing - Lx::RoutingField byte offset: 24
     		}
     		
@@ -773,12 +774,10 @@ public class Lx
   		size.printValue( "size");			// Field: size - Structle::Uint16 byte offset: 134
   		_protocol.printValue( "_protocol");				// Field: _protocol - Lx::ProtocolField byte offset: 134
   		reserved.printValue( "reserved");			// Field: reserved - Structle::Uint32 byte offset: 134
-  		System.out.println( "Byte Array Print not currently supported");
-  		System.out.println( "Byte Array Print not currently supported");
+                Logger.getLogger(Protocol.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
   		_routing.printValue( "_routing");				// Field: _routing - Lx::RoutingField byte offset: 134
   		at_time.printValue( "at_time");			// Field: at_time - Structle::Uint64 byte offset: 134
-  		type.printValue( "type");			// Field: type - Structle::Uint16 byte offset: 134
-  		System.out.println( "Byte Array Print not currently supported");
+  		type.printValue( "type");			// Field: type - Structle::Uint16 byte offset: 134  		
   		payload.printMessageData();
     		}
     		

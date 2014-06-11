@@ -17,6 +17,8 @@ package lifx.java.android.entities.internal.structle;
 
 import android.annotation.SuppressLint;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import lifx.java.android.entities.internal.structle.StructleTypes.Bool8;
 import lifx.java.android.entities.internal.structle.StructleTypes.Float32;
@@ -96,7 +98,7 @@ public class LxProtocolDevice
     		
     		public void printMessageData()
     		{
-  		System.out.println( "Byte Array Print not currently supported");
+                Logger.getLogger(SetSite.class.getName()).log(Level.INFO, "Byte Array Print not currently supported");
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
@@ -2430,7 +2432,8 @@ public class LxProtocolDevice
     		
     		public void printMessageData()
     		{
-  		System.out.println( label);			// Field: label - Structle::String byte offset: 32
+  		//System.out.println( label);			// Field: label - Structle::String byte offset: 32
+                    Logger.getLogger(SetLabel.class.getName()).log(Level.INFO, label);
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
@@ -2605,7 +2608,8 @@ public class LxProtocolDevice
     		
     		public void printMessageData()
     		{
-  		System.out.println( label);			// Field: label - Structle::String byte offset: 32
+  		//System.out.println( label);			// Field: label - Structle::String byte offset: 32
+                    Logger.getLogger(StateLabel.class.getName()).log(Level.INFO, label);
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
@@ -3165,7 +3169,8 @@ public class LxProtocolDevice
     		public void printMessageData()
     		{
   		tags.printValue( "tags");			// Field: tags - Structle::Uint64 byte offset: 40
-  		System.out.println( label);			// Field: label - Structle::String byte offset: 40
+  		//System.out.println( label);			// Field: label - Structle::String byte offset: 40
+                    Logger.getLogger(SetTagLabels.class.getName()).log(Level.INFO, label);
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset
@@ -3383,7 +3388,8 @@ public class LxProtocolDevice
     		public void printMessageData()
     		{
   		tags.printValue( "tags");			// Field: tags - Structle::Uint64 byte offset: 40
-  		System.out.println( label);			// Field: label - Structle::String byte offset: 40
+  		//System.out.println( label);			// Field: label - Structle::String byte offset: 40
+                    Logger.getLogger(StateTagLabels.class.getName()).log(Level.INFO, label);
     		}
     		
     		public static void loadMessageDataWithPayloadAtOffset( byte[] messageData, int offset

@@ -10,6 +10,8 @@ package lifx.java.android.entities.internal.structle;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class StructleTypes
 {
@@ -33,7 +35,7 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        Logger.getLogger(ProtocolField.class.getName()).log(Level.INFO, varName + ": " + getValue());
 		}
 		
 		public int getValue()
@@ -55,7 +57,7 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.println( varName + ": " + getValue());
+                        Logger.getLogger(RoutingField.class.getName()).log(Level.INFO, varName + ": " + getValue());
 		}
 		
 		public int getValue()
@@ -96,15 +98,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+			Logger.getLogger(RoutingField.class.getName()).log(Level.INFO, varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+                        StringBuilder builder = new StringBuilder();
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < data.length; i++)
 			{
-				System.out.printf( "%02X ", data[i]);
+				builder.append(String.format( "%02X ", data[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append( ")");
+                        Logger.getLogger(Int8.class.getName()).log(Level.INFO, builder.toString());
 		}
 	}
 	
@@ -144,15 +147,17 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+                        
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < data.length; i++)
 			{
-				System.out.printf( "%02X ", data[i]);
+				builder.append(String.format( "%02X ", data[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -190,15 +195,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < data.length; i++)
 			{
-				System.out.printf( "%02X ", data[i]);
+				builder.append(String.format( "%02X ", data[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -248,15 +254,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < data.length; i++)
 			{
-				System.out.printf( "%02X ", data[i]);
+				builder.append(String.format( "%02X ", data[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -298,15 +305,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < value.length; i++)
 			{
-				System.out.printf( "%02X ", value[i]);
+				builder.append(String.format( "%02X ", value[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -358,15 +366,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < value.length; i++)
 			{
-				System.out.printf( "%02X ", value[i]);
+				builder.append(String.format( "%02X ", value[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -412,15 +421,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < value.length; i++)
 			{
-				System.out.printf( "%02X ", value[i]);
+				builder.append(String.format( "%02X ", value[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -479,15 +489,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getSignedValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getSignedValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < value.length; i++)
 			{
-				System.out.printf( "%02X ", value[i]);
+				builder.append(String.format( "%02X ", value[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -536,15 +547,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < data.length; i++)
 			{
-				System.out.printf( "%02X ", data[i]);
+				builder.append(String.format( "%02X ", data[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -586,15 +598,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < value.length; i++)
 			{
-				System.out.printf( "%02X ", value[i]);
+				builder.append(String.format( "%02X ", value[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	
@@ -640,15 +653,16 @@ public class StructleTypes
 		
 		public void printValue( String varName)
 		{
-			System.out.print( varName + ": " + getValue());
+                        StringBuilder builder = new StringBuilder();
+			builder.append( varName + ": " + getValue());
 			
-			System.out.print( ", Hex: ( ");
+			builder.append( ", Hex: ( ");
 			for( int i = 0; i < value.length; i++)
 			{
-				System.out.printf( "%02X ", value[i]);
+				builder.append(String.format( "%02X ", value[i]));
 			}
-			System.out.printf( ")");
-			System.out.println( "");
+			builder.append(String.format( ")"));
+			Logger.getLogger(getClass().getName()).log(Level.INFO,  builder.toString());
 		}
 	}
 	

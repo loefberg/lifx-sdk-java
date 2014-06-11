@@ -17,6 +17,8 @@ import java.net.Socket;
 
 import android.os.Handler;
 import android.os.Message;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LFXSocketTCP extends LFXSocketGeneric
 {	
@@ -111,8 +113,8 @@ public class LFXSocketTCP extends LFXSocketGeneric
         		}
         		catch( Exception e)
         		{
-        			System.out.println( "TCP Connection Failed.");
-        		}
+                            Logger.getLogger(TCPReceiveTask.class.getName()).log(Level.INFO, "TCP Connection Failed.");
+                        }
  
             	if( serverStarted)
             	{
@@ -146,21 +148,20 @@ public class LFXSocketTCP extends LFXSocketGeneric
                     }
                     else if( length < 0)
                     {
-                    	System.out.println( "TCP Socket has been closed.");
+                        Logger.getLogger(TCPReceiveTask.class.getName()).log(Level.INFO, "TCP Socket has been closed.");
                     	close();
                     }
                 }
             } 
             catch( Exception e) 
             {
-            	e.printStackTrace();
+            	   Logger.getLogger(TCPReceiveTask.class.getName()).log(Level.SEVERE, null, e);
             } 
             
             close();
             
             publishDisconnected();
-            
-            System.out.println( "TCP Socket Monitor Ended Execution.");
+            Logger.getLogger(TCPReceiveTask.class.getName()).log(Level.INFO, "TCP Socket Monitor Ended Execution.");
 		}
 	}
 	
@@ -185,7 +186,7 @@ public class LFXSocketTCP extends LFXSocketGeneric
 			}
 			catch( Exception e) 
 			{
-				e.printStackTrace();
+                                Logger.getLogger(LFXSocketTCP.class.getName()).log(Level.SEVERE, null, e);
 			}
 		}
 	}
@@ -200,7 +201,7 @@ public class LFXSocketTCP extends LFXSocketGeneric
 			}
 			catch( Exception e) 
 			{
-				e.printStackTrace();
+				Logger.getLogger(LFXSocketTCP.class.getName()).log(Level.SEVERE, null, e);
 			}
 		}
 	}
@@ -216,7 +217,7 @@ public class LFXSocketTCP extends LFXSocketGeneric
 		} 
 		catch( IOException e)
 		{
-			e.printStackTrace();
+			Logger.getLogger(LFXSocketTCP.class.getName()).log(Level.SEVERE, null, e);
 		}
 	}
 	
@@ -263,7 +264,7 @@ public class LFXSocketTCP extends LFXSocketGeneric
                 } 
                 catch( Exception e) 
                 {
-                    e.printStackTrace();
+                    Logger.getLogger(LFXSocketTCP.class.getName()).log(Level.SEVERE, null, e);
                     close();
                 }
         	}
