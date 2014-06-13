@@ -21,3 +21,12 @@ And then tell the log manager to read it.
 ```
 LogManager.getLogManager().readConfiguration(getClass().getResourceAsStream("/logging.properties"));
 ```
+
+### Maven
+```
+<dependency>
+  <groupId>com.github.besherman</groupId>
+  <artifactId>lifx-sdk-java</artifactId>
+  <version>1.0</version>
+</dependency>
+```
