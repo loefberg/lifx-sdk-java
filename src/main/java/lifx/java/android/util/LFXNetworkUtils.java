@@ -10,11 +10,9 @@ package lifx.java.android.util;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.http.conn.util.InetAddressUtils;
+import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -23,6 +21,9 @@ import android.net.wifi.WifiManager;
 
 public class LFXNetworkUtils
 {
+    
+    private static final Pattern ip4AddressPattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+
 	@SuppressLint( "DefaultLocale")
 	public static String getLocalHostAddress() 
 	{
@@ -39,7 +40,7 @@ public class LFXNetworkUtils
                     if (!addr.isLoopbackAddress()) 
                     {
                         String sAddr = addr.getHostAddress().toUpperCase();
-                        boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr); 
+                        boolean isIPv4 = ip4AddressPattern.matcher(sAddr).matches(); 
                         if (useIPv4) 
                         {
                             if (isIPv4) 
