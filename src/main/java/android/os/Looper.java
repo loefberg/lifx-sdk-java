@@ -14,7 +14,8 @@ import java.util.concurrent.Executors;
  * @author Richard
  */
 public class Looper {
-    private static final Looper looper = new Looper();
+    
+    private static Looper looper;
     
     private final ExecutorService executor;
     
@@ -22,7 +23,10 @@ public class Looper {
         executor = Executors.newSingleThreadExecutor();
     }
     
-    public static Looper getMainLooper() {
+    public static synchronized Looper getMainLooper() {
+        if(looper == null) {
+           looper = new Looper();
+        }
         return looper;
     }
 
