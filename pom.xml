@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.besherman</groupId>
     <artifactId>lifx-sdk-java</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
     <name>com.github.besherman:lifx-sdk-java</name>
     <description>A port of "LIFX Android SDK" to Java</description>
@@ -75,7 +75,7 @@
                 </executions>
             </plugin>        
             
-            <plugin>
+<!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <executions>
@@ -87,7 +87,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>            -->
             
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>

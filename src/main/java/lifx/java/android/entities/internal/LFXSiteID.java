@@ -75,19 +75,20 @@ public class LFXSiteID
 		return getDebugStringValue();
 	}
 
-	public boolean equals( LFXSiteID aSiteID)
+        @Override
+	public boolean equals( Object other)
 	{
-		if( aSiteID == null)
-		{
-			return false;
-		}
-		
+            if(other instanceof LFXSiteID) {
+                LFXSiteID aSiteID = (LFXSiteID)other;
 		if( !LFXByteUtils.areByteArraysEqual( data, aSiteID.data) )
 		{
 			return false;
 		}
 		
 		return true;
+            } else {
+                return false;
+            }
 	}
 
 	@Override
