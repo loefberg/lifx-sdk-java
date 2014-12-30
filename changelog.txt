@@ -1,0 +1,5 @@
+Changes to lifx
+
+- moved inner interfaces to outer (ex: LFXLight.LFXLightListener -> LFXListener)
+- renamed listeners for more idiomatic java (ex: lightDidChangeLabel to labelChanged in LFXLightListener)
+- LFXLight now only fires events when properties are changed
