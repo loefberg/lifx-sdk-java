@@ -1337,9 +1337,6 @@ public class LxProtocolLight {
             return label;
         }
 
-        /**
-         * TODO: figure this one out.
-         */
         public UInt64 getTags() {
             return tags;
         }

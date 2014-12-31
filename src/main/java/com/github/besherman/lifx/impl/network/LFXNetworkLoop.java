@@ -28,6 +28,7 @@ package com.github.besherman.lifx.impl.network;
  * @author Richard
  */
 
+import com.github.besherman.lifx.impl.entities.internal.LFXByteUtils;
 import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -59,18 +60,31 @@ public class LFXNetworkLoop {
     private static final Object instanceLock = new Object();
     private static LFXNetworkLoop instance;
     
-    private final BlockingQueue<LFXSocketMessage> outgoingQueue = new ArrayBlockingQueue<>(100); // TODO: this should be configurable
-    private final LFXMessageRouter router = new LFXMessageRouter(outgoingQueue);        
+    private final LFXMessageRouter router = new LFXMessageRouter();        
     private final Object openLock = new Object();
     private final AtomicBoolean opened = new AtomicBoolean(false);
+    
+    /**
+     * The time we wait between sending messages. Flooding the network will not
+     * make the lights happy. lifx-sdk-android sets this to 200
+     */
+    private final int messageSendRateLimitInterval;    
+    
+    private final int outgoingQueueSize;    
+    
+    private BlockingQueue<LFXSocketMessage> outgoingQueue;     
     
     private Reader reader;    
     private Thread readingThread;
     
     private Writer writer;
-    private Thread writingThread;
+    private Thread writingThread;        
     
     private LFXNetworkLoop() {        
+        this.messageSendRateLimitInterval = Integer.parseInt(System.getProperty(
+                "com.github.besherman.lifx.dh.messageSendRateLimitInterval", "50"));
+        this.outgoingQueueSize = Integer.parseInt(System.getProperty(
+                "com.github.besherman.lifx.dh.outgoingQueueSize", "1000"));        
     }
     
     public static LFXNetworkLoop getLoop() {
@@ -89,12 +103,15 @@ public class LFXNetworkLoop {
     public void open() throws IOException {
         synchronized(openLock) {
             if(!opened.getAndSet(true)) {
+                outgoingQueue = new ArrayBlockingQueue<>(this.outgoingQueueSize);
+                router.setOutgoingQueue(outgoingQueue);
+                
                 DatagramChannel channel = DatagramChannel.open();
                 reader = new Reader(channel, router);
                 readingThread = new Thread(reader, "LIFX Network Reader");        
                 readingThread.start();     
                 
-                writer = new Writer(channel, outgoingQueue);
+                writer = new Writer(channel, outgoingQueue, messageSendRateLimitInterval);
                 writingThread = new Thread(writer, "LIFX Network Writer");
                 writingThread.start();                
             } else {
@@ -133,10 +150,12 @@ public class LFXNetworkLoop {
         private final DatagramChannel sendingChannel;
         private final BlockingQueue<LFXSocketMessage> outgoingQueue;
         private final AtomicBoolean running = new AtomicBoolean(true);    
+        private final int messageSendRateLimitInterval;
 
-        public Writer(DatagramChannel sendingChannel, BlockingQueue<LFXSocketMessage> outgoingQueue) {
+        public Writer(DatagramChannel sendingChannel, BlockingQueue<LFXSocketMessage> outgoingQueue, int messageSendRateLimitInterval) {
             this.sendingChannel = sendingChannel;
             this.outgoingQueue = outgoingQueue;
+            this.messageSendRateLimitInterval = messageSendRateLimitInterval;
         }
         
         public void close() {
@@ -164,9 +183,7 @@ public class LFXNetworkLoop {
                                     "Failed to send message", ex);
                         }
 
-                        // TODO: this should be configurable
-                        // lifx-sdk-android has this set to 200
-                        Thread.sleep(50);                                            
+                        Thread.sleep(messageSendRateLimitInterval);                                            
                     }                    
                 }                
             } catch(InterruptedException ex) {
@@ -245,15 +262,15 @@ public class LFXNetworkLoop {
 
                                     // sometimes we get an empty package for some reason
                                     if(bytes.length > 0) { 
+                                        String messageAsHex = LFXByteUtils.byteArrayToHexString(bytes);
+                                        
                                         LFXMessage msg = null;
                                         try {
                                             msg = new LFXMessage(bytes);
                                         } catch(Exception ex) {
-                                            // TODO: print the byte array
                                             Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                                                    "Failed to parse message", ex);
-                                        }
-                                    
+                                                    "Failed to parse message: " + messageAsHex, ex);
+                                        }                                    
 
                                         if(msg != null) {
                                             try {                                    
@@ -261,7 +278,7 @@ public class LFXNetworkLoop {
                                                 router.handleMessage(msg.withSource(addr));
                                             } catch(Exception ex) {
                                                 Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                                                        "Failed to handle message", ex);
+                                                        "Failed to handle message: " + messageAsHex, ex);
                                             }
                                         }
                                     }

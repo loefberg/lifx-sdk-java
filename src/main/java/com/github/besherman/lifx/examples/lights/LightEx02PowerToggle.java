@@ -40,7 +40,7 @@ public class LightEx02PowerToggle {
                 light.setPower(!light.isPower());
             }
             
-            Thread.sleep(5 * 1000);
+            Thread.sleep(15 * 1000);
         } finally {
             client.close();
         }

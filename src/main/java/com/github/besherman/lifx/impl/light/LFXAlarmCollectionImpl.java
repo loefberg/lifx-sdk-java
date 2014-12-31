@@ -64,6 +64,8 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
     private final LFXTimerQueue timerQueue;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
+    private final int alarmRequestTimeout;
+    
     private final List<LFXAlarm> alarms = Collections.synchronizedList(new ArrayList<LFXAlarm>());    
     
     /** When the light is closed/disposed we don't want to trigger loads. */
@@ -85,7 +87,9 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
     public LFXAlarmCollectionImpl(LFXMessageRouter router, LFXTimerQueue timerQueue, LFXTarget target) {
         this.target = target;
         this.router = router;
-        this.timerQueue = timerQueue;        
+        this.timerQueue = timerQueue;     
+        
+        this.alarmRequestTimeout = Integer.parseInt(System.getProperty("com.github.besherman.lifx.dh.alarmTimeout", "500"));
     }
 
     @Override
@@ -303,8 +307,7 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
         public void run() {
             synchronized(alarms) {
                 if(loading) {
-                    // TODO: config this
-                    if((System.currentTimeMillis() - requestStartedTimestamp) > 500) {
+                    if((System.currentTimeMillis() - requestStartedTimestamp) > alarmRequestTimeout) {
                         sendRequest();
                     }
                 }

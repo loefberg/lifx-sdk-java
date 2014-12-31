@@ -152,8 +152,7 @@ public class LFXAllLights implements LFXLightCollection {
     public void clear() {
         lights.clear();
         notLoadedLights.clear();
-    }
-    
+    }    
     
     public LFXLightImpl getLightLodedOrNot(LFXDeviceID deviceID) {
         LFXLightImpl light = lights.get(deviceID);        

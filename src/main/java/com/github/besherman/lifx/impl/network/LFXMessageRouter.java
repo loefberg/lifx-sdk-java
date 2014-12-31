@@ -31,6 +31,7 @@ import com.github.besherman.lifx.impl.entities.internal.LFXSiteID;
 import com.github.besherman.lifx.impl.entities.internal.LFXTarget;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -48,8 +49,7 @@ import java.util.logging.Logger;
  * {@link LFXLightHandler}. In order to know which light should get what message
  * and where to send messages it also tracks routing information.
  */
-public class LFXMessageRouter {
-    private final BlockingQueue<LFXSocketMessage> outgoingQueue;
+public class LFXMessageRouter {    
     private final LFXRoutingTable routingTable = new LFXRoutingTable();    
     private final LFXNetworkSettings networkSettings = new LFXNetworkSettings();    
     private final List<LFXLightHandler> handlers = new ArrayList();
@@ -63,9 +63,13 @@ public class LFXMessageRouter {
     private final Object handlerLock = new Object();
     
     private LFXTimerQueue timerQueue;
+    private BlockingQueue<LFXSocketMessage> outgoingQueue;
 
-    public LFXMessageRouter(BlockingQueue<LFXSocketMessage> outgoingQueue) {
-        this.outgoingQueue = outgoingQueue;        
+    public LFXMessageRouter() {
+    }
+    
+    public void setOutgoingQueue(BlockingQueue<LFXSocketMessage> outgoingQueue) {
+        this.outgoingQueue = outgoingQueue;
     }
     
     public void addHandler(LFXLightHandler handler) {
@@ -89,6 +93,14 @@ public class LFXMessageRouter {
         }
     }
     
+    /**
+     * Waits for the first PAN message to arrive. This is the message that
+     * the "responsible" light sends out and is going to be the first message
+     * we receive - if there are any lights on the network.
+     * 
+     * If there are no lights on the network this message will never come 
+     * and we can give up looking early.
+     */
     public boolean waitForInitPAN(long timeout, TimeUnit unit) throws InterruptedException {
         firstPANReceived.await(timeout, unit);
         return firstPANReceived.getCount() == 0;
@@ -184,7 +196,6 @@ public class LFXMessageRouter {
                 try {
                     handler.handleMessage(targets, message);
                 } catch(Exception ex) {
-                    // TODO: print message body as well
                     Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
                             "Failed to handle message", ex);
                 }
@@ -255,21 +266,40 @@ public class LFXMessageRouter {
             if(address != null) {
                 sendToAddress(message, address);
             } else {
-                // TODO: send to broadcast?
-                Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, "No address for gateway, should send broadcast - NOT IMPLEMENTED YET");
+                // this should not happen
+                Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
+                        "No address for gateway, this should not happen");
             }            
         }        
     }
     
     private void sendBroadcast(LFXMessage message) {
-        sendToAddress(message, networkSettings.getBroadcast());
+        InetSocketAddress broadcastAddress;
+        try {
+            broadcastAddress = networkSettings.getBroadcast();
+        } catch(SocketException ex) {
+            Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
+                    "Failed to get broadcast address", ex);
+            return;
+        }
+        
+        sendToAddress(message, broadcastAddress);
     }
     
+    int maxQueueLength = 0;
+    
     private void sendToAddress(LFXMessage message, InetSocketAddress address) {
+        int messagesInQueue = outgoingQueue.size();
+        if(messagesInQueue > maxQueueLength) {
+            //Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.INFO, "New max queue size is " + messagesInQueue);
+            maxQueueLength = messagesInQueue;
+        }
+        
         byte[] messageData = message.getMessageDataRepresentation();
         LFXSocketMessage sm = new LFXSocketMessage(messageData, address);
         if(!outgoingQueue.offer(sm)) {
-            Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, "Failed to send message, queue is full");
+            Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
+                    "Failed to send message, queue is full");
         }        
     }
     

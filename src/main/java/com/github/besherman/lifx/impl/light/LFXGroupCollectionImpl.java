@@ -256,7 +256,6 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
     private void setGroupLabels(Set<LFXTagID> ids, String label) {
         for(LFXTagID id: ids) {
             LFXGroupImpl group = allGroups.get(id);
-            // TODO: what if it does not exist?
             group.labelDidChangeTo(label);
             updateAvailability(group);
         }

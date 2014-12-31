@@ -37,25 +37,23 @@ import java.util.Enumeration;
  * @author Richard
  */
 public class LFXNetworkSettings {
-    private final InetSocketAddress broadcastAddress;
+    private InetSocketAddress broadcastAddress;
     
     private final int broadcastPort = 56700;
     private final int peerToPeerPort = 56750;
     
     
     public LFXNetworkSettings() {
-        try {
-            this.broadcastAddress = new InetSocketAddress(getFirstActiveBroadcast(), broadcastPort);
-        } catch(SocketException ex) {
-            throw new RuntimeException("failed to find broadcast address");
-        }
+        
     }
-
 
     /**
      * Returns the broadcast address that sockets should use.
      */
-    public InetSocketAddress getBroadcast() {
+    public synchronized InetSocketAddress getBroadcast() throws SocketException {
+        if(broadcastAddress == null) {
+            broadcastAddress = new InetSocketAddress(getFirstActiveBroadcast(), broadcastPort);
+        }
         return broadcastAddress;
     }
     

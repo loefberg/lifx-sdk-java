@@ -55,6 +55,7 @@ public class LFXLightImpl implements LFXLight {
     private final LFXLightDetailsImpl details;
     private final LFXAlarmCollectionImpl alarms;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);    
+    private final int lightLostTimeout;
     
     private boolean enabled;
     private String label = "";
@@ -75,6 +76,7 @@ public class LFXLightImpl implements LFXLight {
         this.router = router;        
         this.alarms = new LFXAlarmCollectionImpl(router, timerQueue, new LFXTarget(deviceID));
         this.details = new LFXLightDetailsImpl(router, new LFXTarget(deviceID));        
+        this.lightLostTimeout = Integer.parseInt(System.getProperty("com.github.besherman.lifx.dh.lightLostTimeout", "20000"));
     }
 
     @Override
@@ -199,7 +201,12 @@ public class LFXLightImpl implements LFXLight {
         return messagesUntilLoaded.isEmpty();
     }
     
-    // TODO: remove
+    /**
+     * Returns the message types this light is waiting for before it can call
+     * itself loaded. 
+     * 
+     * TODO: remove this
+     */
     public Set<LxProtocol.Type> getMessagesUntilLoaded() {
         return this.messagesUntilLoaded;
     }
@@ -214,7 +221,7 @@ public class LFXLightImpl implements LFXLight {
     }
     
     public boolean isLost() {
-        return (System.currentTimeMillis() - lastSeenTimestamp) > 20000;
+        return (System.currentTimeMillis() - lastSeenTimestamp) > lightLostTimeout;
     }
     
     public void close() {

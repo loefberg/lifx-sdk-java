@@ -47,6 +47,9 @@ import java.util.Set;
 public class LFXRoutingTable {
     private final Map<LFXSiteID, GatewayEntry> gateways = new HashMap<>();
     private final Map<LFXDeviceID, LightEntry> lights = new HashMap<>();
+
+    public LFXRoutingTable() {
+    }
     
     // 
     // Information needed handle message

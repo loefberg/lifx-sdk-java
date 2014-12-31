@@ -50,7 +50,7 @@ public class GroupEx09GroupLightListener {
         public void groupAdded(LFXGroup group) {
             System.out.format("Group '%s' with %s light(s) added %n", group.getLabel(), group.size());
             
-            // TODO: we are leaking the listener here, don't do this
+            // we are leaking the listener here, don't do this
             group.addLightCollectionListener(new MyLightListener(group));
         }
 

@@ -70,8 +70,6 @@ public class LFXClient {
      * @throws IOException if the client fails to connect to the network.
      */
     public void open(boolean block) throws IOException, InterruptedException {
-        // TODO: block until queue is empty
-        //       or even better, until all lights are loaded
         loop.open();
         
         if(block) {
