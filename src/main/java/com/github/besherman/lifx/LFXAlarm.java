@@ -81,7 +81,8 @@ public class LFXAlarm {
     }    
     
     /**
-     * Creates an alarm.
+     * Creates an alarm that will turn the light on or of at a given time
+     * and fading to the given color.
      * 
      * @param time the time when the alarm will trigger.
      * @param power if true the light will be turned on
@@ -93,7 +94,8 @@ public class LFXAlarm {
     }
 
     /**
-     * Creates an alarm.
+     * Creates an alarm that will turn the light on or of at a given time
+     * and fading to the given waveform.
      * 
      * @param time the time when the alarm will trigger.
      * @param power if true the light will be turned on
@@ -170,7 +172,10 @@ public class LFXAlarm {
     public LFXHSBKColor getColor() {
         return waveform.getColor();
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         int hash = 7;

@@ -38,10 +38,18 @@ public class LFXHSBKColor {
     private final float brightness;			// 0.0 - 1.0
     private final int kelvin;				// 0 - 10,000
 
+    /**
+     * Creates a new color with a kelvin of 5000.
+     */
     public LFXHSBKColor(Color color) {
         this(color, 5000);
     }
     
+    /**
+     * Creates a new HSBK color from an RGB color and a kelvin value.
+     * @param color an RGB color
+     * @param kelvin the kelvin value in the range [0, 10000]
+     */
     public LFXHSBKColor(Color color, int kelvin) {
         if(color == null) {
             throw new IllegalArgumentException("color can not be null");
@@ -56,6 +64,13 @@ public class LFXHSBKColor {
         this.kelvin = kelvin;
     }
     
+    /**
+     * Creates a new HSBK color.
+     * @param hue hue in the range [0, 360]
+     * @param saturation saturation in the range [0, 1]
+     * @param brightness brightness in the range [0, 1]
+     * @param kelvin kelvin in the range [0, 10000]
+     */
     public LFXHSBKColor(float hue, float saturation, float brightness, int kelvin) {
         if(hue < 0 || hue > 360) {
             throw new IllegalArgumentException("hue must be between 0 and 360");
@@ -76,27 +91,46 @@ public class LFXHSBKColor {
         this.kelvin = kelvin;
     }
 
+    /**
+     * Returns the hue component of the color.
+     * @return [0, 360]
+     */
     public float getHue() {
         return hue;
     }
 
+    /**
+     * Returns the saturation component of the color.
+     * @return [0, 1]
+     */
     public float getSaturation() {
         return saturation;
     }
 
+    /**
+     * Returns the brightness component of the color.
+     * @return [0, 1]
+     */
     public float getBrightness() {
         return brightness;
     }
 
+    /**
+     * Returns the kelvin component of the color.
+     * @return [0, 10000]
+     */
     public int getKelvin() {
         return kelvin;
     }
 
     @Override
     public String toString() {
-        return "LFXHSBKColor{" + "hue=" + hue + ", saturation=" + saturation + ", brightness=" + brightness + ", kelvin=" + kelvin + '}';
+        return "LFXHSBKColor{" + "hue=" + hue + ", sat=" + saturation + ", bri=" + brightness + ", kelvin=" + kelvin + '}';
     }
 
+    /**
+     * Returns the average color.
+     */
     public static LFXHSBKColor averageOfColors(LFXHSBKColor[] colors) {
         if (colors.length == 0) {
             return null;
@@ -132,11 +166,8 @@ public class LFXHSBKColor {
         int kelvin = (int) (kelvinTotal / colors.length);
 
         return new LFXHSBKColor(hue, saturation, brightness, kelvin);
-    }
-    
-    public static LFXHSBKColor getColor(float hue, float saturation, float brightness, int kelving) {
-        return new LFXHSBKColor(hue, saturation, brightness, kelving);
-    }
+    }   
+
 
     @Override
     public int hashCode() {

@@ -26,8 +26,7 @@ package com.github.besherman.lifx;
 import java.util.Iterator;
 
 /**
- *
- * @author Richard
+ * A collection of lights.
  */
 public interface LFXLightCollection extends Iterable<LFXLight> {
     
@@ -51,6 +50,16 @@ public interface LFXLightCollection extends Iterable<LFXLight> {
      */
     @Override
     Iterator<LFXLight> iterator();
+    
+    /**
+     * Returns the first light found with label or null if not found.
+     */
+    LFXLight getLightByLabel(String label);
+
+    /**
+     * Returns the light with id or null if not found.
+     */
+    LFXLight getLightByID(String id);
 
     /**
      * Adds a listener that gets notified when lights are added or removed

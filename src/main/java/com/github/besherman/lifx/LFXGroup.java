@@ -27,16 +27,19 @@ import java.awt.Color;
 import java.beans.PropertyChangeListener;
 
 /**
- * 
+ * A group of lights. This allows for multiple lights to be changed at a time.
+ * If you are changing power or color on a lot of lights at the same
+ * time the LIFX protocol only requires one message to be sent if you are
+ * using a group.
  */
 public interface LFXGroup extends LFXLightCollection {
     /**
-     * Returns the groups label.
+     * Returns the group's label.
      */
     String getLabel();
     
     /**
-     * Sets the groups label. 
+     * Sets this group's label.
      * @param label this string can not be empty or longer than 32 characters.
      */
     void setLabel(String label);
@@ -70,8 +73,14 @@ public interface LFXGroup extends LFXLightCollection {
      */
     void setColor(Color color, long duration);
     
+    /**
+     * Adds a light to this group.
+     */
     void add(LFXLight light);
     
+    /**
+     * Removes a light from this group.
+     */
     void remove(LFXLight light);
         
     void addPropertyChangeListener(PropertyChangeListener l);

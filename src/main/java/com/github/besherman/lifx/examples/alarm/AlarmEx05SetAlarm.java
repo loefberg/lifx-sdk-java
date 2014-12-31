@@ -21,29 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.besherman.lifx.examples.lights;
+package com.github.besherman.lifx.examples.alarm;
 
+import com.github.besherman.lifx.LFXAlarm;
+import com.github.besherman.lifx.LFXAlarmCollection;
 import com.github.besherman.lifx.LFXClient;
+import com.github.besherman.lifx.LFXHSBKColor;
 import com.github.besherman.lifx.LFXLight;
+import java.awt.Color;
+import java.util.Date;
 
 /**
  *
  */
-public class LightEx01PrintLights {
+public class AlarmEx05SetAlarm {
     public static void main(String[] args) throws Exception {
-        LFXClient client = new LFXClient();        
+        LFXClient client = new LFXClient();
         client.open(true);
-        try {
-            for(LFXLight light: client.getLights()) {
-                System.out.format("Light: %n");
-                System.out.format("\tid=%s%n", light.getID());
-                System.out.format("\tlabel=%s%n", light.getLabel());
-                System.out.format("\tpower=%s%n", light.isPower());
-                System.out.format("\ttime=%s%n", light.getTime());
-                System.out.format("\tcolor=%s%n", light.getColor());                
-            }
+        try {            
+            LFXLight light = client.getLights().getLightByLabel("my light");
+            Date time = new Date(System.currentTimeMillis() + 5 * 1000);
+
+            LFXAlarmCollection alarms = light.getAlarms();                        
+            alarms.set(0, new LFXAlarm(time, new LFXHSBKColor(Color.BLUE), 7 * 1000));                                
+            
+            Thread.sleep(2 * 1000);
         } finally {
             client.close();
         }
-    }
+    }    
+
 }

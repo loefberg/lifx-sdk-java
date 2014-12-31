@@ -24,8 +24,7 @@
 package com.github.besherman.lifx;
 
 /**
- *
- * @author Richard
+ * Listener that get notified when a group is added or removed.
  */
 public interface LFXGroupCollectionListener {
     void groupAdded(LFXGroup group);

@@ -26,8 +26,7 @@ package com.github.besherman.lifx;
 import java.util.Iterator;
 
 /**
- *
- * @author Richard
+ * A collection of groups.
  */
 public interface LFXGroupCollection extends Iterable<LFXGroup> {
     /**

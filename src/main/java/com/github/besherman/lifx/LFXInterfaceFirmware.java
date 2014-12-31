@@ -25,8 +25,7 @@ package com.github.besherman.lifx;
 
 
 /**
- *
- * @author Richard
+ * Interface firmware details.
  */
 public class LFXInterfaceFirmware {
     private final long build;

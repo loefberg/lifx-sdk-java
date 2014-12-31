@@ -159,6 +159,17 @@ public class LFXGroupImpl implements LFXGroup {
         }        
     }
     
+    @Override
+    public LFXLight getLightByLabel(String label) {
+        return lights.getLightByID(label);
+    }
+
+    @Override
+    public LFXLight getLightByID(String id) {
+        return lights.getLightByID(id);
+    }   
+    
+    
     /**
      * Removes light without sending message to network.
      */

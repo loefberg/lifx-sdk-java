@@ -67,6 +67,17 @@ public class LFXAllLights implements LFXLightCollection {
     }
 
     @Override
+    public LFXLight getLightByLabel(String label) {
+        return lights.getLightByID(label);
+    }
+
+    @Override
+    public LFXLight getLightByID(String id) {
+        return lights.getLightByID(id);
+    }   
+    
+
+    @Override
     public void addLightCollectionListener(LFXLightCollectionListener listener) {
         lights.addLightCollectionListener(listener);
     }

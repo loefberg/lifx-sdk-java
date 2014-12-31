@@ -107,6 +107,36 @@ public final class LFXLightCollectionImpl implements LFXLightCollection {
             fireLightAdded(light);
         }
     }
+
+    @Override
+    public LFXLight getLightByLabel(String label) {
+        if(label == null) {
+            throw new IllegalArgumentException("label can not be null");
+        }
+        
+        for(LFXLight light: this) {
+            if(light.getLabel().equals(label)) {
+                return light;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public LFXLight getLightByID(String id) {
+        if(id == null) {
+            throw new IllegalArgumentException("id can not be null");
+        }
+        
+        for(LFXLight light: this) {
+            if(light.getID().equals(id)) {
+                return light;
+            }
+        }
+        return null;        
+    }
+    
+    
     
     private void fireLightAdded(LFXLight light) {        
         for(LFXLightCollectionListener listener: listeners) {

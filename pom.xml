@@ -62,6 +62,23 @@
                 </executions>
             </plugin>
             
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludePackageNames>com.github.besherman.lifx.impl.*:com.github.besherman.lifx.examples.*</excludePackageNames>
+                </configuration>
+            </plugin>        
+            
+            
             <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

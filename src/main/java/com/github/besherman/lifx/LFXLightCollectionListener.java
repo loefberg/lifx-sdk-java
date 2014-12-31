@@ -24,8 +24,7 @@
 package com.github.besherman.lifx;
 
 /**
- *
- * @author Richard
+ * A listener that gets informed when a light is added or removed.
  */
 public interface LFXLightCollectionListener {
     void lightAdded(LFXLight light);

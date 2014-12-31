@@ -25,8 +25,7 @@ package com.github.besherman.lifx;
 
 
 /**
- *
- * @author Richard
+ * Interface status.
  */
 public class LFXInterfaceStat {
     private final float signal;
