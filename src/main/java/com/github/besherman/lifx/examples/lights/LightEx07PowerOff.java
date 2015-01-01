@@ -38,9 +38,7 @@ public class LightEx07PowerOff {
             for(LFXLight light: client.getLights()) {
                 System.out.format("Turning off light '%s' %n", light.getLabel());
                 light.setPower(false);
-            }
-            
-            Thread.sleep(2 * 1000);
+            }            
         } finally {
             client.close();
         }

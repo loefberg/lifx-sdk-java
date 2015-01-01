@@ -38,9 +38,7 @@ public class LightEx02PowerToggle {
             for(LFXLight light: client.getLights()) {
                 System.out.format("Toggeling light '%s' %n", light.getLabel());
                 light.setPower(!light.isPower());
-            }
-            
-            Thread.sleep(15 * 1000);
+            }            
         } finally {
             client.close();
         }

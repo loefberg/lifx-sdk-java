@@ -40,9 +40,7 @@ public class LightEx04ChangeLabel {
                 String newLabel = String.format("Bulb #%s", index++);
                 System.out.format("Changing label from '%s'  to '%s' %n", light.getLabel(), newLabel);
                 light.setLabel(newLabel);                
-            }
-            
-            Thread.sleep(2 * 1000);
+            }            
         } finally {
             client.close();
         }

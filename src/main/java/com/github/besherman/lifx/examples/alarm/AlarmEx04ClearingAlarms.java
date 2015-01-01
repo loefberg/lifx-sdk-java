@@ -50,9 +50,7 @@ public class AlarmEx04ClearingAlarms {
                 } else {
                     Logger.getLogger(AlarmEx04ClearingAlarms.class.getName()).log(Level.INFO, "Alarms was not loaded");
                 }
-            }
-            
-            Thread.sleep(1 * 1000);
+            }            
         } finally {
             client.close();
         }

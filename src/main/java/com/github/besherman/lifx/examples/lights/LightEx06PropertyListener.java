@@ -24,7 +24,6 @@
 package com.github.besherman.lifx.examples.lights;
 
 import com.github.besherman.lifx.LFXClient;
-import com.github.besherman.lifx.LFXGroup;
 import com.github.besherman.lifx.LFXLight;
 import com.github.besherman.lifx.LFXLightCollectionListener;
 import java.beans.PropertyChangeEvent;

@@ -43,9 +43,7 @@ public class AlarmEx05SetAlarm {
             Date time = new Date(System.currentTimeMillis() + 5 * 1000);
 
             LFXAlarmCollection alarms = light.getAlarms();                        
-            alarms.set(0, new LFXAlarm(time, new LFXHSBKColor(Color.BLUE), 7 * 1000));                                
-            
-            Thread.sleep(2 * 1000);
+            alarms.set(0, new LFXAlarm(time, new LFXHSBKColor(Color.BLUE), 7 * 1000));                                            
         } finally {
             client.close();
         }

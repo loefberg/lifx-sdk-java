@@ -40,9 +40,7 @@ public class LightEx03ChangeColor {
                 System.out.format("Setting color on '%s' %n", light.getLabel());
                 light.setPower(true);
                 light.setColor(Color.BLUE);
-            }
-            
-            Thread.sleep(5 * 1000);
+            }            
         } finally {
             client.close();
         }

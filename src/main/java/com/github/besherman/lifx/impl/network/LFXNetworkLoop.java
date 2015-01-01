@@ -106,14 +106,14 @@ public class LFXNetworkLoop {
                 outgoingQueue = new ArrayBlockingQueue<>(this.outgoingQueueSize);
                 router.setOutgoingQueue(outgoingQueue);
                 
-                DatagramChannel channel = DatagramChannel.open();
-                reader = new Reader(channel, router);
-                readingThread = new Thread(reader, "LIFX Network Reader");        
-                readingThread.start();     
-                
-                writer = new Writer(channel, outgoingQueue, messageSendRateLimitInterval);
+                writer = new Writer(outgoingQueue, messageSendRateLimitInterval);
                 writingThread = new Thread(writer, "LIFX Network Writer");
                 writingThread.start();                
+                
+                
+                reader = new Reader(writer.getChannel(), router);
+                readingThread = new Thread(reader, "LIFX Network Reader");        
+                readingThread.start();                     
             } else {
                 Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.INFO, "NetworkLoop already opened");
             }
@@ -124,13 +124,14 @@ public class LFXNetworkLoop {
         synchronized(openLock) {
             if(opened.getAndSet(false)) {
                 reader.close();
-                writer.close();
-                writingThread.interrupt();
+                writer.close();                
 
                 try {
                     readingThread.join();
                     writingThread.join();
-                } catch(InterruptedException ex) {}
+                } catch(InterruptedException ex) {
+                    // TODO: maybee we should interrupt the writing thread here?
+                }
             } else {
                 Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.INFO, "NetworkLoop already closed");
             }
@@ -147,15 +148,19 @@ public class LFXNetworkLoop {
     
     private static class Writer implements Runnable {
         private static final int BUF_SIZE = 255;
-        private final DatagramChannel sendingChannel;
+        private final DatagramChannel channel;
         private final BlockingQueue<LFXSocketMessage> outgoingQueue;
         private final AtomicBoolean running = new AtomicBoolean(true);    
         private final int messageSendRateLimitInterval;
 
-        public Writer(DatagramChannel sendingChannel, BlockingQueue<LFXSocketMessage> outgoingQueue, int messageSendRateLimitInterval) {
-            this.sendingChannel = sendingChannel;
+        public Writer(BlockingQueue<LFXSocketMessage> outgoingQueue, int messageSendRateLimitInterval) throws IOException {
+            this.channel = DatagramChannel.open();
             this.outgoingQueue = outgoingQueue;
             this.messageSendRateLimitInterval = messageSendRateLimitInterval;
+        }
+        
+        public DatagramChannel getChannel() {
+            return channel;
         }
         
         public void close() {
@@ -166,7 +171,11 @@ public class LFXNetworkLoop {
         public void run() {
             ByteBuffer buf = ByteBuffer.allocate(BUF_SIZE);
             try {
-                while(running.get()) {
+                // we don't want to stop before the queue is empty because
+                // then the stuff we asked for wont happen and the user
+                // will be confused - we've hopefully stopped the reader though
+                // so nothing new will end up on the queue                
+                while(running.get() || !outgoingQueue.isEmpty()) {
                     //
                     // Send outgoing messages
                     //                    
@@ -177,7 +186,7 @@ public class LFXNetworkLoop {
                         buf.flip();
 
                         try {
-                            sendingChannel.send(buf, msg.getAddress());
+                            channel.send(buf, msg.getAddress());
                         } catch(Exception ex) {
                             Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
                                     "Failed to send message", ex);
@@ -186,10 +195,15 @@ public class LFXNetworkLoop {
                         Thread.sleep(messageSendRateLimitInterval);                                            
                     }                    
                 }                
-            } catch(InterruptedException ex) {
-                // expected
             } catch(Exception ex) {
                 Logger.getLogger(Writer.class.getName()).log(Level.SEVERE, "Writer died unexpectadly");
+            } finally {
+                try {
+                    channel.close();
+                } catch(IOException ex) {
+                    Logger.getLogger(Writer.class.getName()).log(Level.SEVERE, 
+                            "Failed to close DatagramChannel", ex);
+                }
             }
         }      
                 
@@ -202,7 +216,6 @@ public class LFXNetworkLoop {
 
         private final Selector selector;
         private final LFXMessageRouter router;  
-        private final DatagramChannel sendingChannel;
 
         public Reader(DatagramChannel channel, LFXMessageRouter router) throws IOException {            
             this.router = router;
@@ -211,8 +224,6 @@ public class LFXNetworkLoop {
 
             selector = Selector.open();
             channel.register(selector, SelectionKey.OP_READ);                    
-
-            sendingChannel = channel;
         }
 
         public void close() {                        
@@ -306,14 +317,7 @@ public class LFXNetworkLoop {
                 } catch(IOException ex) {
                     Logger.getLogger(Reader.class.getName()).log(Level.SEVERE, 
                             "Failed to close selector", ex);
-                }
-                
-                try {
-                    sendingChannel.close();
-                } catch(IOException ex) {
-                    Logger.getLogger(Reader.class.getName()).log(Level.SEVERE, 
-                            "Failed to close channel", ex);
-                }
+                }                
             }
             
             Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.FINE, 

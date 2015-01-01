@@ -57,9 +57,7 @@ public class AlarmEx03SetAlarm {
                         Logger.getLogger(AlarmEx03SetAlarm.class.getName()).log(Level.INFO, "Alarms was not loaded");
                     }
                 }
-            }
-            
-            Thread.sleep(2 * 1000);
+            }            
         } finally {
             client.close();
         }
