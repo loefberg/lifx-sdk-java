@@ -30,7 +30,7 @@ import com.github.besherman.lifx.LFXHSBKColor;
 import com.github.besherman.lifx.LFXLight;
 
 /**
- *
+ * Prints all alarms.
  */
 public class AlarmEx01PrintAlarms {
     public static void main(String[] args) throws Exception {
@@ -38,7 +38,7 @@ public class AlarmEx01PrintAlarms {
         client.open(true);
         try {
             // the alarms takes a while to load
-            Thread.sleep(2 * 1000);
+            Thread.sleep(5 * 1000);
             
             for(LFXLight light: client.getLights()) {
                 System.out.format("Light '%s' (%s): %n", light.getLabel(), light.getID());

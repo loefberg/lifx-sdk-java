@@ -57,6 +57,8 @@ public class LFXMessageRouter {
     
     private final CountDownLatch firstPANReceived = new CountDownLatch(1);
     
+    private final LFXResponseTracker responseTracker = new LFXResponseTracker(routingTable);
+    
     // we have to synchronize the handlers because otherwise it gets hard
     // to know if a handler should be opened when it is added / closed when
     // removed
@@ -68,8 +70,10 @@ public class LFXMessageRouter {
     public LFXMessageRouter() {
     }
     
+    // TODO: this is annoying me... should be passed to the constructor
     public void setOutgoingQueue(BlockingQueue<LFXSocketMessage> outgoingQueue) {
         this.outgoingQueue = outgoingQueue;
+        this.responseTracker.setOutgoingQueue(outgoingQueue);
     }
     
     public void addHandler(LFXLightHandler handler) {
@@ -109,9 +113,13 @@ public class LFXMessageRouter {
     public void open() {
         synchronized(handlerLock) {
             if(!opened.getAndSet(true)) {
-                timerQueue = new LFXTimerQueue();        
+                timerQueue = new LFXTimerQueue();  
+                
+                responseTracker.open();
 
-                timerQueue.doLater(sendGatewayDiscoveryAction, 0, TimeUnit.SECONDS);
+                for(int i = 0; i < 5; i++) {
+                    timerQueue.doLater(sendGatewayDiscoveryAction, i, TimeUnit.SECONDS);                    
+                }                
 
                 timerQueue.doRepeatedly(sendGatewayDiscoveryAction, 15, TimeUnit.SECONDS);
 
@@ -143,6 +151,8 @@ public class LFXMessageRouter {
                                 "Failed to close LightHandler", ex);
                     }
                 }
+                
+                responseTracker.close();
 
                 timerQueue.close();        
             } else {
@@ -155,23 +165,36 @@ public class LFXMessageRouter {
     public void handleMessage(LFXMessage message) { 
         if(!message.isAResponseMessage()) {
             return;
-        }
+        }        
         
-        routingTable.updateTable(message);    
         
         if(message.getType() == LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_PAN_GATEWAY) {
-            firstPANReceived.countDown();
+            LFXSiteID newSite = routingTable.updateTableWithPAN(message);
+            if(newSite != null) {            
+                firstPANReceived.countDown();
+
+                // We want to find all lights as soon as possible, but we have to 
+                // know about the gateways before we can do that. So when we get
+                // info about a gateway we look for lights.
+                //
+                // Later we'll periodically ask for new lights every 15 seconds
+                //
+                Runnable sendGetLights = new SendGetLightsFromSite(newSite);
+                sendGetLights.run();
+                timerQueue.doLater(sendGetLights, 100, TimeUnit.MILLISECONDS);                
+                timerQueue.doLater(sendGetLights, 200, TimeUnit.MILLISECONDS);
+            } 
+        } else {    
+            responseTracker.updateReponse(message);
             
-            // We want to find all lights as soon as possible, but we have to 
-            // know about the gateways before we can do that. So when we get
-            // info about a gateway we look for lights.
-            timerQueue.doLater(sendGetRoutingInfoLightAction, 0, TimeUnit.MILLISECONDS);
-            timerQueue.doLater(sendGetRoutingInfoTagsAction, 0, TimeUnit.MILLISECONDS);
-            timerQueue.doLater(sendGetRoutingInfoLightAction, 100, TimeUnit.MILLISECONDS);
-            timerQueue.doLater(sendGetRoutingInfoTagsAction, 100, TimeUnit.MILLISECONDS);
-            timerQueue.doLater(sendGetRoutingInfoLightAction, 200, TimeUnit.MILLISECONDS);
-            timerQueue.doLater(sendGetRoutingInfoTagsAction, 200, TimeUnit.MILLISECONDS);
-        } else {             
+            LFXDeviceID newDevice = routingTable.updateTableWithLight(message);
+            if(newDevice != null) {
+                // the routing table needs to know about tags, so we ask about
+                // them when we find a new light                
+                sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TAGS, new LFXTarget(newDevice)));
+            }
+            
+            
             LFXBinaryPath path = message.getPath();
 
             Set<LFXDeviceID> targets = new HashSet<>();
@@ -193,7 +216,7 @@ public class LFXMessageRouter {
             }
             
             for(LFXLightHandler handler: handlers) {
-                try {
+                try {                    
                     handler.handleMessage(targets, message);
                 } catch(Exception ex) {
                     Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
@@ -261,10 +284,10 @@ public class LFXMessageRouter {
             for (InetSocketAddress address : routingTable.getAllSiteAddresses()) {
                 sendToAddress(message, address);
             }
-        } else {
+        } else {            
             InetSocketAddress address = routingTable.getAddressForSiteID(message.getPath().getSiteID());
             if(address != null) {
-                sendToAddress(message, address);
+                sendToAddress(message, address);                
             } else {
                 // this should not happen
                 Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
@@ -300,7 +323,8 @@ public class LFXMessageRouter {
         if(!outgoingQueue.offer(sm)) {
             Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
                     "Failed to send message, queue is full");
-        }        
+        }         
+        responseTracker.trackResponse(message, sm);
     }
     
     
@@ -318,19 +342,17 @@ public class LFXMessageRouter {
         }        
     };    
     
-    private final Runnable sendGetRoutingInfoLightAction = new Runnable() {
+    
+    private class SendGetLightsFromSite implements Runnable {
+        private final LFXSiteID site;
+
+        public SendGetLightsFromSite(LFXSiteID site) {
+            this.site = site;
+        }
+
         @Override
         public void run() {
-            sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_GET, LFXTarget.getBroadcastTarget()));                            
-        }        
-    };       
-    
-    private final Runnable sendGetRoutingInfoTagsAction = new Runnable() {
-        @Override
-        public void run() {
-            sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TAGS, LFXTarget.getBroadcastTarget()));
-        }        
-    };       
-    
-    
+            sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_GET, new LFXBinaryPath(site)));                            
+        }
+    }
 }

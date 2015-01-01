@@ -30,7 +30,7 @@ import com.github.besherman.lifx.LFXLight;
 import com.github.besherman.lifx.LFXLightCollectionListener;
 
 /**
- *
+ * Creates a listener that prints when lights are added to groups.
  */
 public class GroupEx09GroupLightListener {
     public static void main(String[] args) throws Exception {

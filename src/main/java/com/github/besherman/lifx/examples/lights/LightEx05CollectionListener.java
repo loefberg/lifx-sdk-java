@@ -28,8 +28,7 @@ import com.github.besherman.lifx.LFXLight;
 import com.github.besherman.lifx.LFXLightCollectionListener;
 
 /**
- *
- * @author Richard
+ * Registers a listener that prints the light label when it is discovered.
  */
 public class LightEx05CollectionListener {
     public static void main(String[] args) throws Exception {

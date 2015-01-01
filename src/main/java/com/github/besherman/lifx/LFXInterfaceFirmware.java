@@ -23,39 +23,54 @@
  */
 package com.github.besherman.lifx;
 
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.Objects;
+
 
 /**
  * Interface firmware details.
  */
 public class LFXInterfaceFirmware {
-    private final long build;
-    private final long install;
-    private final long version;
+    private final Date build;
+    private final BigInteger install;
+    private final int majorVersion;
+    private final int minorVersion;
 
-    public LFXInterfaceFirmware(long build, long install, long version) {
+    public LFXInterfaceFirmware(Date build, BigInteger install, int majorVersion, int minorVersion) {
         this.build = build;
         this.install = install;
-        this.version = version;
+        this.majorVersion = majorVersion;
+        this.minorVersion = minorVersion;
     }
 
-    public long getBuild() {
-        return build;
+    public Date getBuild() {
+        return (Date)build.clone();
     }
 
-    public long getInstall() {
+    public BigInteger getInstall() {
         return install;
     }
 
-    public long getVersion() {
-        return version;
+    public int getMajorVersion() {
+        return majorVersion;
+    }
+    
+    public int getMinorVersion() {
+        return minorVersion;
+    }
+
+    public String getVersion() {
+        return String.format("%s.%s", getMajorVersion(), getMinorVersion());
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 29 * hash + (int) (this.build ^ (this.build >>> 32));
-        hash = 29 * hash + (int) (this.install ^ (this.install >>> 32));
-        hash = 29 * hash + (int) (this.version ^ (this.version >>> 32));
+        hash = 37 * hash + Objects.hashCode(this.build);
+        hash = 37 * hash + Objects.hashCode(this.install);
+        hash = 37 * hash + this.majorVersion;
+        hash = 37 * hash + this.minorVersion;
         return hash;
     }
 
@@ -68,13 +83,16 @@ public class LFXInterfaceFirmware {
             return false;
         }
         final LFXInterfaceFirmware other = (LFXInterfaceFirmware) obj;
-        if (this.build != other.build) {
+        if (!Objects.equals(this.build, other.build)) {
             return false;
         }
-        if (this.install != other.install) {
+        if (!Objects.equals(this.install, other.install)) {
             return false;
         }
-        if (this.version != other.version) {
+        if (this.majorVersion != other.majorVersion) {
+            return false;
+        }
+        if (this.minorVersion != other.minorVersion) {
             return false;
         }
         return true;
@@ -82,6 +100,6 @@ public class LFXInterfaceFirmware {
 
     @Override
     public String toString() {
-        return "InterfaceFirmware{" + "build=" + build + ", install=" + install + ", version=" + version + '}';
+        return "LFXInterfaceFirmware{" + "build=" + build + ", install=" + install + ", majorVersion=" + majorVersion + ", minorVersion=" + minorVersion + '}';
     }
 }

@@ -66,6 +66,16 @@ public interface LFXLightDetails {
      * Returns information about the wifi interface.
      */
     LFXInterfaceStat getWifiStat();    
+    
+    /**
+     * Returns information about the mesh firmware.
+     */
+    LFXInterfaceFirmware getMeshFirmware();
+    
+    /**
+     * Returns information about the wifi firmware.
+     */
+    LFXInterfaceFirmware getWifiFirmware();
 
     /**
      * Returns information for the different products in the light.

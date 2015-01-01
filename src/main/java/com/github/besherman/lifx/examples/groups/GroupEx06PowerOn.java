@@ -29,13 +29,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Finds the group "Test Group" and turns on all lights in the group.
  */
 public class GroupEx06PowerOn {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();
         client.open(true);
         try {
+            // have to wait for groups, see #7
+            Thread.sleep(10 * 1000);
+            
             LFXGroup group = client.getGroups().get("Test Group");
             if(group == null) {
                 Logger.getLogger(GroupEx06PowerOn.class.getName()).log(Level.INFO, "No test group found");

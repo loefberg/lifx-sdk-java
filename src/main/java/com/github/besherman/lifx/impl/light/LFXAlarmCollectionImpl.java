@@ -26,17 +26,19 @@ package com.github.besherman.lifx.impl.light;
 import com.github.besherman.lifx.LFXAlarm;
 import com.github.besherman.lifx.LFXAlarmCollection;
 import com.github.besherman.lifx.LFXHSBKColor;
+import com.github.besherman.lifx.LFXInterfaceFirmware;
 import com.github.besherman.lifx.LFXWaveform;
 import com.github.besherman.lifx.impl.entities.internal.LFXBinaryTypes;
 import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
 import com.github.besherman.lifx.impl.entities.internal.LFXTarget;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol;
+import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_WIFI_FIRMWARE;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_SET_SIMPLE_EVENT;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE_SIMPLE_EVENT;
+import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocolDevice;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocolLight;
 import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes;
 import com.github.besherman.lifx.impl.network.LFXMessageRouter;
-import com.github.besherman.lifx.impl.network.LFXTimerQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.math.BigInteger;
@@ -45,7 +47,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,43 +54,23 @@ import java.util.logging.Logger;
 /**
  * The protocol specifies 256 possible alarms, but it also has a max flag that
  * is sent with each message which tells us how many alarms the light can 
- * use. When load() is called we asks for the first alarm, when we get that
- * response we ask for the next alarm until we've loaded max number of alarms.
- * When load() is called we also start a timer that resends the current request
- * if it times out.
+ * use. 
  */
 public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
     private final LFXTarget target;
     private final LFXMessageRouter router;
-    private final LFXTimerQueue timerQueue;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    
-    private final int alarmRequestTimeout;
     
     private final List<LFXAlarm> alarms = Collections.synchronizedList(new ArrayList<LFXAlarm>());    
     
-    /** When the light is closed/disposed we don't want to trigger loads. */
     private final AtomicBoolean closed = new AtomicBoolean(false);
     
-    /** true while we are loading */
-    private boolean loading = false;
-    
-    /** the current index that the load process is waiting for */
-    private int currentIndexRequested;
-    
-    /** when we asked for the last index */
-    private long requestStartedTimestamp;
-    
-    /** the timeout trackers key, so that we can cancel it when done or closed */
-    private Object timerKey;    
+    private final AtomicBoolean clearForInit = new AtomicBoolean(false);
     
     
-    public LFXAlarmCollectionImpl(LFXMessageRouter router, LFXTimerQueue timerQueue, LFXTarget target) {
+    public LFXAlarmCollectionImpl(LFXMessageRouter router, LFXTarget target) {
         this.target = target;
-        this.router = router;
-        this.timerQueue = timerQueue;     
-        
-        this.alarmRequestTimeout = Integer.parseInt(System.getProperty("com.github.besherman.lifx.dh.alarmTimeout", "500"));
+        this.router = router;        
     }
 
     @Override
@@ -152,14 +133,14 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
             return;
         }
         
-        synchronized(alarms) {
-            if(loading == false) {                                                
-                loading = true;                                
-                currentIndexRequested = 0;
-                sendRequest();
-                timerKey = timerQueue.doRepeatedly(checkRefreshTimeoutAction, 10, TimeUnit.MILLISECONDS);
-            } 
-        }
+        if(!clearForInit.get()) {
+            return;
+        }                
+
+        // TODO: this should be revisited when lights supports more than two
+        // alarms.
+        sendGetAlarm(0);        
+        sendGetAlarm(1);        
     }
 
     @Override
@@ -179,20 +160,33 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
     
     public void close() {        
         closed.set(false);
-        synchronized(alarms) {
-            // needs to be synchronized becase we can close at the same time
-            // as someone calls load()
-            if(timerKey != null) {
-                timerQueue.cancel(timerKey);
-            }
-        }
+    }    
+    
+    public boolean isLoaded() {
+        // TODO implement this
+        return true;
     }    
 
     public void handleMessage(LFXMessage message) {
         if(message.getType() == LX_PROTOCOL_LIGHT_STATE_SIMPLE_EVENT) {
             LxProtocolLight.StateSimpleEvent payload = message.getPayload();
             simpleEventDidChangeTo(payload);
-        }        
+        } else if(message.getType() == LX_PROTOCOL_DEVICE_STATE_WIFI_FIRMWARE) {
+            if(!clearForInit.get()) {
+                LxProtocolDevice.StateWifiFirmware payload = message.getPayload();
+                LFXInterfaceFirmware wifi = LFXBinaryTypes.createFirmware(payload.getBuild(), payload.getInstall(), payload.getVersion());
+                boolean lightSupportsAlarms = wifi.getMajorVersion() > 1 || wifi.getMajorVersion() == 1 && wifi.getMinorVersion() >= 5;
+                if(lightSupportsAlarms) {
+                    clearForInit.set(true);
+                    load();
+                } else {
+                    Logger.getLogger(LFXAlarmCollectionImpl.class.getName()).log(Level.INFO, 
+                            String.format("light %s has firmware version %s which does not support alarms", 
+                                    target.getDeviceID().getStringRepresentation(),
+                                    wifi.getVersion()));
+                }
+            }
+        }
     }
     
     
@@ -231,9 +225,15 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
     }
     
     private void simpleEventDidChangeTo(LxProtocolLight.StateSimpleEvent payload) {        
-        resize(payload.getMax().getValue());
-        
         int index = payload.getIndex().getValue();
+        
+        synchronized(alarms) {
+            int maxNumberOfAlarms = payload.getMax().getValue();
+            while(maxNumberOfAlarms > alarms.size()) {
+                alarms.add(createEmptyAlarm());
+            }
+        }
+        
         if(index < 0 || index >= alarms.size()) {
             Logger.getLogger(LFXAlarmCollectionImpl.class.getName()).log(Level.SEVERE, 
                     "Received alarm with index out of range. Index was {0} size is {1}", 
@@ -258,61 +258,22 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
                 payload.getPower().getValue() > 0, 
                 payload.getDuration().getValue(), 
                 waveform);        
-                
+
+        
         LFXAlarm old;                
         synchronized(alarms) {
             old = alarms.get(index);
             alarms.set(index, alarm);     
-            
-            
-            if(loading) {
-                if(currentIndexRequested == index) {                    
-                    //if(!isEmpty(alarm)) {
-                    if(currentIndexRequested < alarms.size() - 1) {
-                        currentIndexRequested += 1;
-                        sendRequest();
-                    } else {       
-                        loading = false;
-                        timerQueue.cancel(timerKey);
-                        timerKey = null;
-                    }
-                }
-            }
-        }
-        pcs.fireIndexedPropertyChange("alarms", index, old, alarm);
-    }
-    
-    private void resize(int max) {
-        int old;
-        synchronized(alarms) {
-            old = alarms.size();
-            while(max > alarms.size()) {
-                alarms.add(createEmptyAlarm());
-            }
-        }
-        pcs.firePropertyChange("size", old, alarms.size());
-    }
+        }   
+         
+        pcs.fireIndexedPropertyChange("alarms", index, old, alarm);        
+    }   
    
     
-    private void sendRequest() {         
-        int index = currentIndexRequested;
+    private void sendGetAlarm(int index) {         
         LxProtocolLight.GetSimpleEvent payload = new LxProtocolLight.GetSimpleEvent(new StructleTypes.UInt8(index));
         LFXMessage msg = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_GET_SIMPLE_EVENT, target, payload);
         router.sendMessage(msg);
-        requestStartedTimestamp = System.currentTimeMillis();
     }
-    
-    private final Runnable checkRefreshTimeoutAction = new Runnable() {
-        @Override
-        public void run() {
-            synchronized(alarms) {
-                if(loading) {
-                    if((System.currentTimeMillis() - requestStartedTimestamp) > alarmRequestTimeout) {
-                        sendRequest();
-                    }
-                }
-            }
-        }
-    };
 
 }

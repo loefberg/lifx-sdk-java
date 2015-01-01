@@ -27,8 +27,7 @@ import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXLight;
 
 /**
- *
- * @author Richard
+ * Toggles power on all lights.
  */
 public class LightEx02PowerToggle {
     public static void main(String[] args) throws Exception {

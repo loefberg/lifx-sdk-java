@@ -73,7 +73,7 @@ public class LFXClient {
         loop.open();
         
         if(block) {
-            lightHandler.waitForLoaded(31, TimeUnit.SECONDS);
+            lightHandler.waitForLoaded(300, TimeUnit.SECONDS);
         }
     }
     

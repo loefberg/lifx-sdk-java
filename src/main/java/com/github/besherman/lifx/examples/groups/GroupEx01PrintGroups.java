@@ -27,14 +27,16 @@ import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXGroup;
 
 /**
- *
+ * Prints all groups.
  */
 public class GroupEx01PrintGroups {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();
         client.open(true);
         try {
-            Thread.sleep(1 * 1000);
+            // have to wait for groups, see #7
+            Thread.sleep(10 * 1000);
+            
             for(LFXGroup group: client.getGroups()) {
                 System.out.format("Group '%s' with %s lights %n", group.getLabel(), group.size());
             }

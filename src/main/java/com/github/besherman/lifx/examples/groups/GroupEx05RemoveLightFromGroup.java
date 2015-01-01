@@ -31,13 +31,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Finds the group "Test Group" and removes the first light from it.
  */
 public class GroupEx05RemoveLightFromGroup {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();
         client.open(true);       
         try {
+            // have to wait for groups, see #7
+            Thread.sleep(10 * 1000);            
+            
             LFXGroup group = client.getGroups().get("Test Group");
             if(group == null) {
                 Logger.getLogger(GroupEx05RemoveLightFromGroup.class.getName()).log(Level.INFO, "No Test Group found");

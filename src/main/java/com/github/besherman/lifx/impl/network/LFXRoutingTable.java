@@ -145,40 +145,26 @@ public class LFXRoutingTable {
     } 
     
     
+    //
+    //
+    //
+    
+    public synchronized boolean isLightStillAlive(LFXDeviceID deviceID) {
+        return lights.containsKey(deviceID);
+    }
+
     
     /**
-     * Updates the routing table from information in the message.
+     * Updates the routing table with information about PAN gateways.
+     * 
+     * This is its distinct from updateTable() because the caller wants to know
+     * if a new gateway was found so that it can ask it for new lights.
+     * 
+     * @return the site id if a new gateway was found
      */
-    public synchronized void updateTable(LFXMessage message) {
-        
+    public synchronized LFXSiteID updateTableWithPAN(LFXMessage message) {
+        LFXSiteID newGatewayDiscovered = null;
         LFXBinaryPath path = message.getPath();
-        
-        if(path.getBinaryTargetID().getTargetType() == LFXBinaryTargetType.DEVICE) {
-            LFXSiteID site = path.getSiteID();
-            LFXDeviceID device = path.getBinaryTargetID().getDeviceID();
-            
-            LightEntry entry = lights.get(device);
-            if(entry == null) {
-                entry = new LightEntry(device);
-                lights.put(device, entry);
-            }            
-            entry.refresh(site);
-        }
-        
-        if(message.getType() == LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TAGS) {
-            LxProtocolDevice.StateTags payload = message.getPayload();            
-            LFXDeviceID device = path.getBinaryTargetID().getDeviceID();
-            Set<LFXTagID> tags = LFXTagID.unpack(payload.getTags());
-            
-            LightEntry entry = lights.get(device);
-            if(entry == null) {
-                entry = new LightEntry(device);
-                lights.put(device, entry);
-            }
-            entry.setTags(tags);
-        }
-        
-        
         
         if(message.getType() == LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_PAN_GATEWAY) {
             LxProtocolDevice.StatePanGateway statePanGatewayPayload = (LxProtocolDevice.StatePanGateway) message.getPayload();
@@ -190,20 +176,62 @@ public class LFXRoutingTable {
 
             if (service == LxProtocolDevice.Service.LX_PROTOCOL_DEVICE_SERVICE_TCP) {
                 // TODO: can this happen?
-                return;
+                return null;
             }
 
             GatewayEntry gateway = gateways.get(site);
             if(gateway == null) {                        
                 gateway = new GatewayEntry(new InetSocketAddress(host, port), site);
                 gateways.put(site, gateway);
+                newGatewayDiscovered = site;
             } else {
                 gateway.refresh(new InetSocketAddress(host, port));
             }        
         }
 
         removeStaleGateways();
-        removeStaleLights();        
+     
+        return newGatewayDiscovered;
+    }
+    
+    /**
+     * Updates the routing table from information in the message.
+     */
+    public synchronized LFXDeviceID updateTableWithLight(LFXMessage message) {
+        LFXDeviceID newLightDiscovered = null;
+        LFXBinaryPath path = message.getPath();
+        
+        if(path.getBinaryTargetID().getTargetType() == LFXBinaryTargetType.DEVICE) {
+            LFXSiteID site = path.getSiteID();
+            LFXDeviceID device = path.getBinaryTargetID().getDeviceID();
+            
+            LightEntry entry = lights.get(device);
+            if(entry == null) {
+                entry = new LightEntry(device);
+                lights.put(device, entry);
+                newLightDiscovered = device;
+            }            
+            entry.refresh(site);
+        }
+        
+        if(message.getType() == LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TAGS) {
+            LxProtocolDevice.StateTags payload = message.getPayload();            
+            LFXDeviceID device = path.getBinaryTargetID().getDeviceID();
+            Set<LFXTagID> tags = LFXTagID.unpack(payload.getTags());
+                        
+            LightEntry entry = lights.get(device);
+            if(entry != null) {
+                entry.setTags(tags);
+            } else {
+                // If we get tags information before we have discovered the 
+                // light we ignore it... right?                
+            }
+        }
+        
+        removeStaleGateways();
+        removeStaleLights();      
+        
+        return newLightDiscovered;
     }
     
     /**
@@ -233,9 +261,7 @@ public class LFXRoutingTable {
             }
         }        
     }
-    
 
-    
     
     private static class LightEntry {
         private final LFXDeviceID device;

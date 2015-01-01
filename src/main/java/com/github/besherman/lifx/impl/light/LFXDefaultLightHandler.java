@@ -36,8 +36,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -94,9 +92,16 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
     @Override
     public void open() {
         timerQueue = new LFXTimerQueue();        
-        timerQueue.doLater(sendGetLightInfo, 200, TimeUnit.MILLISECONDS);
+
         timerQueue.doRepeatedly(sendGetLightInfo, 15, TimeUnit.SECONDS);        
-        timerQueue.doRepeatedly(refreshLightsAction, 100, TimeUnit.MILLISECONDS);
+        timerQueue.doRepeatedly(refreshLightsAction, 1, TimeUnit.SECONDS);
+        
+//        timerQueue.doRepeatedly(new Runnable() {
+//            @Override
+//            public void run() {
+//                lights.printReasons();
+//            }
+//        }, 1, TimeUnit.SECONDS);
     }
 
     @Override
@@ -107,11 +112,9 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
     private final Runnable sendGetLightInfo = new Runnable() {
         @Override
         public void run() {
-            for(int i = 0; i < 3; i++) {
-                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_LABEL, LFXTarget.getBroadcastTarget()));
-                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_POWER, LFXTarget.getBroadcastTarget()));
-                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME, LFXTarget.getBroadcastTarget()));
-            }
+            router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_LABEL, LFXTarget.getBroadcastTarget()));
+            router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_POWER, LFXTarget.getBroadcastTarget()));
+            router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME, LFXTarget.getBroadcastTarget()));
             
             // get the tag labels
             {

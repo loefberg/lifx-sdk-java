@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Sets an alarm on all lights, 5 seconds from now.
  */
 public class AlarmEx02SetAlarm {
     public static void main(String[] args) throws Exception {
@@ -42,7 +42,7 @@ public class AlarmEx02SetAlarm {
         client.open(true);
         try {
             // the alarms takes a while to load
-            Thread.sleep(2 * 1000);
+            Thread.sleep(10 * 1000);
             
             for(LFXLight light: client.getLights()) {
                 // create an alarm 5 seconds from now that turns the lights

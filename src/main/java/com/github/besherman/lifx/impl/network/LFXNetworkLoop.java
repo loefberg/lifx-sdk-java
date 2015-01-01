@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -81,10 +82,8 @@ public class LFXNetworkLoop {
     private Thread writingThread;        
     
     private LFXNetworkLoop() {        
-        this.messageSendRateLimitInterval = Integer.parseInt(System.getProperty(
-                "com.github.besherman.lifx.dh.messageSendRateLimitInterval", "50"));
-        this.outgoingQueueSize = Integer.parseInt(System.getProperty(
-                "com.github.besherman.lifx.dh.outgoingQueueSize", "1000"));        
+        this.messageSendRateLimitInterval = LFXConstants.getNetworkLoopSendRateLimitInterval();        
+        this.outgoingQueueSize = LFXConstants.getOutgoingQueueSize();
     }
     
     public static LFXNetworkLoop getLoop() {
@@ -236,6 +235,8 @@ public class LFXNetworkLoop {
             Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.FINE, "Starting event loop");        
             try {
                 router.open();
+                
+                Set<Integer> cache = new HashSet<>();
 
                 ByteBuffer buf = ByteBuffer.allocate(BUF_SIZE);
                 while(running.get()) {
@@ -249,7 +250,7 @@ public class LFXNetworkLoop {
                         Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
                                 "Failed to select channel", ex);
                     } 
-
+                    
                     if(selected > 0) {
                         Set<SelectionKey> keys = selector.selectedKeys();
                         for(SelectionKey key: keys) {
@@ -273,7 +274,7 @@ public class LFXNetworkLoop {
 
                                     // sometimes we get an empty package for some reason
                                     if(bytes.length > 0) { 
-                                        String messageAsHex = LFXByteUtils.byteArrayToHexString(bytes);
+                                        String messageAsHex = LFXByteUtils.byteArrayToHexString(bytes);                                        
                                         
                                         LFXMessage msg = null;
                                         try {
@@ -283,7 +284,7 @@ public class LFXNetworkLoop {
                                                     "Failed to parse message: " + messageAsHex, ex);
                                         }                                    
 
-                                        if(msg != null) {
+                                        if(msg != null) {                                            
                                             try {                                    
                                                 InetAddress addr = ((InetSocketAddress)source).getAddress();
                                                 router.handleMessage(msg.withSource(addr));

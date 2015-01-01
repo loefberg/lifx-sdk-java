@@ -65,16 +65,18 @@ public class LFXLightImpl implements LFXLight {
 
     // the messages we wait for unit we call this light loaded
     private final Set<LxProtocol.Type> messagesUntilLoaded = Collections.synchronizedSet(new HashSet<>(Arrays.asList(
+            // wait for the basic information is loaded
             LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE,
             LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_LABEL,
             LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_POWER,
-            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TIME)));
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TIME
+    )));
     
     public LFXLightImpl(LFXMessageRouter router, LFXTimerQueue timerQueue, LFXDeviceID deviceID) {
         this.target = new LFXTarget(deviceID);
         this.deviceID = deviceID;
         this.router = router;        
-        this.alarms = new LFXAlarmCollectionImpl(router, timerQueue, new LFXTarget(deviceID));
+        this.alarms = new LFXAlarmCollectionImpl(router, new LFXTarget(deviceID));
         this.details = new LFXLightDetailsImpl(router, new LFXTarget(deviceID));        
         this.lightLostTimeout = Integer.parseInt(System.getProperty("com.github.besherman.lifx.dh.lightLostTimeout", "20000"));
     }
@@ -198,7 +200,7 @@ public class LFXLightImpl implements LFXLight {
     }    
     
     public boolean isLoaded() {
-        return messagesUntilLoaded.isEmpty();
+        return messagesUntilLoaded.isEmpty() && alarms.isLoaded() && details.isLoaded();
     }
     
     /**
@@ -261,7 +263,6 @@ public class LFXLightImpl implements LFXLight {
                 timeDidChangeTo(payload.getTime().getBigIntegerValue());
                 break;
             }
-            
             default:
                 break;
         }

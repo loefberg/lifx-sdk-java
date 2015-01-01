@@ -27,8 +27,7 @@ import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXLight;
 
 /**
- *
- * @author Richard
+ * Turns all lights off.
  */
 public class LightEx07PowerOff {
     public static void main(String[] args) throws Exception {

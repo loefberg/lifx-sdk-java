@@ -25,30 +25,43 @@ package com.github.besherman.lifx.examples.groups;
 
 import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXGroup;
-import java.awt.Color;
+import com.github.besherman.lifx.LFXLight;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Finds the group "Test Group" and changes the color of all lights in the group.
+ * Finds the group called "Test Group" and adds all lights to it.
  */
-public class GroupEx07ChangeColor {
+public class GroupEx03AddLightsToGroup {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();
-        client.open(true);
+        client.open(true);       
         try {
             // have to wait for groups, see #7
             Thread.sleep(10 * 1000);
             
             LFXGroup group = client.getGroups().get("Test Group");
             if(group == null) {
-                Logger.getLogger(GroupEx07ChangeColor.class.getName()).log(Level.INFO, "No test group found");
+                Logger.getLogger(GroupEx03AddLightsToGroup.class.getName()).log(Level.INFO, "No Test Group found");
                 return;
             }
-            group.setColor(Color.MAGENTA);
+
+            Iterator<LFXLight> it = client.getLights().iterator();
+            if(!it.hasNext()) {
+                Logger.getLogger(GroupEx03AddLightsToGroup.class.getName()).log(Level.INFO, "No lights found");
+                return;
+            }
+            
+            while(it.hasNext()) {
+                LFXLight light = it.next();
+                if(!group.contains(light)) {
+                    System.out.format("Adding light '%s' to group '%s' %n", light.getLabel(), group.getLabel());
+                    group.add(light);
+                }
+            } 
         } finally {
             client.close();
         }
-        
     }    
 }

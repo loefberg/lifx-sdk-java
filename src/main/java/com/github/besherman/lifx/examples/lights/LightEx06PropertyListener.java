@@ -30,8 +30,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- *
- * @author Richard
+ * Listens to new lights and when found adds a property changed listener which
+ * prints all properties when they changes.
+ * 
+ * Give it some time.
  */
 public class LightEx06PropertyListener {
     public static void main(String[] args) throws Exception {
@@ -64,8 +66,6 @@ public class LightEx06PropertyListener {
     private static class MyPropertyListener implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            // Note that the time property changes several times, but the difference
-            // is in milliseconds so it looks like it is the same date
             LFXLight light = (LFXLight)evt.getSource();
             System.out.format("Light %s changed %s from '%s' to '%s' %n", light.getID(), evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
         }        

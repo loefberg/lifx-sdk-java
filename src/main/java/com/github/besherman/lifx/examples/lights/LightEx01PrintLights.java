@@ -27,7 +27,7 @@ import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXLight;
 
 /**
- *
+ * Prints basic information about all lights.
  */
 public class LightEx01PrintLights {
     public static void main(String[] args) throws Exception {

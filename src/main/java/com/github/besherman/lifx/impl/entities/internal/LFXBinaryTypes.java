@@ -25,9 +25,15 @@
 package com.github.besherman.lifx.impl.entities.internal;
 
 import com.github.besherman.lifx.LFXHSBKColor;
+import com.github.besherman.lifx.LFXInterfaceFirmware;
 import com.github.besherman.lifx.impl.entities.LFXPowerState;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocolLight;
+import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes;
 import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt16;
+import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt32;
+import java.math.BigInteger;
+import java.util.Calendar;
+import java.util.Date;
 
 public class LFXBinaryTypes {
 
@@ -78,4 +84,77 @@ public class LFXBinaryTypes {
 
         return lightHSBK;
     }
+    
+
+    
+    public static LFXInterfaceFirmware createFirmware(StructleTypes.UInt64 build, StructleTypes.UInt64 install, UInt32 version) {
+        int majorVersion = (int)((version.getValue() & 0xffff0000) >> 16); 
+        int minorVersion = (int)(version.getValue() & 0xffff);
+        Date buildDate = getBuildDate(build);
+        return new LFXInterfaceFirmware(buildDate, install.getBigIntegerValue(), majorVersion, minorVersion);        
+    }
+    
+    private static Date getBuildDate(StructleTypes.UInt64 build) {
+        BigInteger bigBuild = build.getBigIntegerValue();
+        if(bigBuild.compareTo(new BigInteger("1200000000000000000")) > 0) {
+            return new Date(bigBuild.divide(new BigInteger("1000000")).longValue());        
+        } else {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date(0));
+            
+            byte[] bytes = build.getBytes();
+            cal.set(Calendar.YEAR, 2000 + bytes[7]);
+            cal.set(Calendar.DAY_OF_MONTH, bytes[3]);
+            cal.set(Calendar.HOUR, bytes[2]);
+            cal.set(Calendar.MINUTE, bytes[1]);
+            cal.set(Calendar.SECOND, bytes[0]);
+            
+            char[] mon = new char[3];
+            mon[0] = (char)bytes[6];
+            mon[1] = (char)bytes[5];
+            mon[2] = (char)bytes[4];
+            String month = new String(mon);
+            
+            switch(month) {
+                case "Jan":
+                    cal.set(Calendar.MONTH, 0);
+                    break;
+                case "Feb":
+                    cal.set(Calendar.MONTH, 1);
+                    break;
+                case "Mar":
+                    cal.set(Calendar.MONTH, 2);
+                    break;
+                case "Apr":
+                    cal.set(Calendar.MONTH, 3);
+                    break;
+                case "May":
+                    cal.set(Calendar.MONTH, 4);
+                    break;
+                case "Jun":
+                    cal.set(Calendar.MONTH, 5);
+                    break;
+                case "Jul":
+                    cal.set(Calendar.MONTH, 6);
+                    break;
+                case "Aug":
+                    cal.set(Calendar.MONTH, 7);
+                    break;
+                case "Sep":
+                    cal.set(Calendar.MONTH, 8);
+                    break;
+                case "Oct":
+                    cal.set(Calendar.MONTH, 9);
+                    break;
+                case "Nov":
+                    cal.set(Calendar.MONTH, 10);
+                    break;
+                case "Dec":
+                    cal.set(Calendar.MONTH, 11);
+                    break;
+            }          
+            return cal.getTime();
+        }        
+    }    
+        
 }

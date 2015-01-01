@@ -21,34 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.besherman.lifx.examples.groups;
+package com.github.besherman.lifx.examples.lights;
 
 import com.github.besherman.lifx.LFXClient;
-import com.github.besherman.lifx.LFXGroup;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.github.besherman.lifx.LFXLight;
 
 /**
- *
+ * Prints wifi and mesh versions.
  */
-public class GroupEx03RemoveGroup {
+public class LightEx09PrintVersions {
     public static void main(String[] args) throws Exception {
-        LFXClient client = new LFXClient();
-        client.open(true);       
+        LFXClient client = new LFXClient();                
+        client.open(true);
         try {
-
-            LFXGroup group = client.getGroups().get("Test Group");
-            if(group == null) {
-                Logger.getLogger(GroupEx03RemoveGroup.class.getName()).log(Level.INFO, "No Test Group found");
-                return;
+            for(LFXLight light: client.getLights()) {
+                System.out.format("light '%s' (%s) %n", light.getLabel(), light.getID());
+                System.out.format("\twifi install=%s, version=%s, build=%s %n", 
+                    light.getDetails().getWifiFirmware().getInstall(),
+                    light.getDetails().getWifiFirmware().getVersion(),
+                    light.getDetails().getWifiFirmware().getBuild());
+                System.out.format("\tmesh install=%s, version=%s, build=%s %n", 
+                    light.getDetails().getMeshFirmware().getInstall(),
+                    light.getDetails().getMeshFirmware().getVersion(),
+                    light.getDetails().getMeshFirmware().getBuild());
+                
             }
-
-            System.out.println("Removing group...");
-            client.getGroups().remove(group);
-
-            Thread.sleep(2 * 1000);
         } finally {
             client.close();
         }
     }    
+    
 }

@@ -30,7 +30,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- *
+ * Creates a listener that prints out changes to group properties.
  */
 public class GroupEx10PropertyListener {
     public static void main(String[] args) throws Exception {

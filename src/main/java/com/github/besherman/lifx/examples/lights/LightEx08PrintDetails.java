@@ -25,80 +25,57 @@ package com.github.besherman.lifx.examples.lights;
 
 import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXLight;
-import com.github.besherman.lifx.LFXLightCollection;
 import com.github.besherman.lifx.LFXLightDetails;
 import com.github.besherman.lifx.LFXVersion;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
- *
+ * Prints detailed information about all lights.
  */
 public class LightEx08PrintDetails {
     public static void main(String[] args) throws Exception {
-        LFXClient client = new LFXClient();  
-        Timer timer = new Timer();
-        TimerTask task = new MyTask(client.getLights());        
-        
-        timer.schedule(task, 1000, 15000);
-        
-        client.open(false);
+        LFXClient client = new LFXClient();          
+        client.open(true);
         try {
-            Thread.sleep(120 * 1000);
+            for(LFXLight light: client.getLights()) {
+                printDetails(light);
+            }
         } finally {
             client.close();
         }
-        timer.cancel();
     }
     
-    private static class MyTask extends TimerTask {
-        private final LFXLightCollection lights;
+    private static void printDetails(LFXLight light) {
+        LFXLightDetails details = light.getDetails();
 
-        public MyTask(LFXLightCollection lights) {
-            this.lights = lights;
-        }
-        
-        @Override
-        public void run() {
-            for(LFXLight light: lights) {
-                printDetails(light);
-            }
-        }
+        System.out.format("light '%s' (%s) %n", light.getLabel(), light.getID());
+        System.out.format("\ttemperatur=%s C %n", details.getTemperature());
+        System.out.format("\tuptime=%s ms %n", details.getUptime());
+        System.out.format("\tdowntime=%s ms %n", details.getDowntime());
+        System.out.format("\tMCU Rail Voltage=%s V %n", details.getMCURailVoltage());
+        System.out.format("\treset switch position=%s %n", details.getResetSwitchPosition());            
 
-        private void printDetails(LFXLight light) {
-            LFXLightDetails details = light.getDetails();
-            
-            System.out.format("light '%s' (%s) %n", light.getLabel(), light.getID());
-            System.out.format("\ttemperatur=%s C %n", details.getTemperature());
-            System.out.format("\tuptime=%s ms %n", details.getUptime());
-            System.out.format("\tdowntime=%s ms %n", details.getDowntime());
-            System.out.format("\tMCU Rail Voltage=%s V %n", details.getMCURailVoltage());
-            System.out.format("\treset switch position=%s %n", details.getResetSwitchPosition());            
+        System.out.println("\tMesh:");
+        System.out.format("\t\tmcu temp=%s %n", details.getMeshStat().getMcuTemperature());
+        System.out.format("\t\trx=%s %n", details.getMeshStat().getRx());
+        System.out.format("\t\ttx=%s %n", details.getMeshStat().getTx());
+        System.out.format("\t\tsignal=%s %n", details.getMeshStat().getSignal());
 
-            System.out.println("\tMesh:");
-            System.out.format("\t\tmcu temp=%s %n", details.getMeshStat().getMcuTemperature());
-            System.out.format("\t\trx=%s %n", details.getMeshStat().getRx());
-            System.out.format("\t\ttx=%s %n", details.getMeshStat().getTx());
-            System.out.format("\t\tsignal=%s %n", details.getMeshStat().getSignal());
-            
-            System.out.println("\tWifi:");
-            System.out.format("\t\tmcu temp=%s %n", details.getWifiStat().getMcuTemperature());
-            System.out.format("\t\trx=%s %n", details.getWifiStat().getRx());
-            System.out.format("\t\ttx=%s %n", details.getWifiStat().getTx());
-            System.out.format("\t\tsignal=%s %n", details.getWifiStat().getSignal());
-            
-            for(LFXVersion version: details.getVersions()) {
-                System.out.println("\tVersion:");
-                System.out.format("\t\tproduct=%s %n", version.getProduct());
-                System.out.format("\t\tvendor=%s %n", version.getVendor());
-                System.out.format("\t\tversion=%s %n", version.getVersion());
-            }
-            System.out.println("");
-            
-            details.load();            
+        System.out.println("\tWifi:");
+        System.out.format("\t\tmcu temp=%s %n", details.getWifiStat().getMcuTemperature());
+        System.out.format("\t\trx=%s %n", details.getWifiStat().getRx());
+        System.out.format("\t\ttx=%s %n", details.getWifiStat().getTx());
+        System.out.format("\t\tsignal=%s %n", details.getWifiStat().getSignal());
+        
+        // TODO: add firmware and mesh version
+
+        for(LFXVersion version: details.getVersions()) {
+            System.out.println("\tVersion:");
+            System.out.format("\t\tproduct=%s %n", version.getProduct());
+            System.out.format("\t\tvendor=%s %n", version.getVendor());
+            System.out.format("\t\tversion=%s %n", version.getVersion());
         }
-        
-        
+        System.out.println("");
+
+        details.load();            
     }
-    
 }

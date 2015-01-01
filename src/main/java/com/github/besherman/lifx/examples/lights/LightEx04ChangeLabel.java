@@ -27,8 +27,7 @@ import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXLight;
 
 /**
- *
- * @author Richard
+ * Changes the label on all lights.
  */
 public class LightEx04ChangeLabel {
     public static void main(String[] args) throws Exception {

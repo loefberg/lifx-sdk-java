@@ -28,6 +28,7 @@ import com.github.besherman.lifx.LFXLightCollection;
 import com.github.besherman.lifx.LFXLightCollectionListener;
 import com.github.besherman.lifx.impl.entities.internal.LFXDeviceID;
 import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
+import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol;
 import com.github.besherman.lifx.impl.network.LFXMessageRouter;
 import com.github.besherman.lifx.impl.network.LFXTimerQueue;
 import java.util.Iterator;
@@ -101,8 +102,12 @@ public class LFXAllLights implements LFXLightCollection {
                 light = notLoadedLights.get(device);
                 if(light == null) {
                     light = new LFXLightImpl(router, timer, device);
+                    router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_LABEL, light.getTarget()));
+                    router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_POWER, light.getTarget()));
+                    router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME, light.getTarget()));
                     light.getDetails().load();
-                    light.getAlarms().load();
+                    // note: alarms are not initially loaded here because we
+                    // have to know what version the light is first
                     notLoadedLights.put(device, light);
                 }
             }
@@ -111,11 +116,17 @@ public class LFXAllLights implements LFXLightCollection {
             if(notLoaded && light.isLoaded()) {
                 lights.add(light);
                 notLoadedLights.remove(light.getDeviceID());
-                if(notLoadedLights.isEmpty()) {
-                    allLightsLoaded.countDown();
+            }
+        }
+        
+        if(notLoadedLights.isEmpty()) {
+            for(LFXLight l: lights) {
+                if(((LFXLightImpl)l).isLoaded() == false) {
+                    return;
                 }
             }
-        }    
+            allLightsLoaded.countDown();
+        }
     }
     
     public void printReasons() {

@@ -28,8 +28,7 @@ import com.github.besherman.lifx.LFXLight;
 import java.awt.Color;
 
 /**
- *
- * @author Richard
+ * Changes the color on all lights.
  */
 public class LightEx03ChangeColor {
     public static void main(String[] args) throws Exception {
@@ -39,7 +38,7 @@ public class LightEx03ChangeColor {
             for(LFXLight light: client.getLights()) {
                 System.out.format("Setting color on '%s' %n", light.getLabel());
                 light.setPower(true);
-                light.setColor(Color.BLUE);
+                light.setColor(Color.PINK);
             }            
         } finally {
             client.close();

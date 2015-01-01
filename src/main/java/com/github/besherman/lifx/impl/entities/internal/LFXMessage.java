@@ -36,7 +36,6 @@ import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.L
 import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt64;
 import java.net.InetAddress;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Set;
 
 public class LFXMessage {
@@ -80,6 +79,8 @@ public class LFXMessage {
     // network connection). For outgoing messages, this will be nil.
     private final InetAddress sourceNetworkHost;
 
+    // 
+    private final int incomingHash;
     
     /**
      * Creates a new message with specific type. Used for outgoing messages.
@@ -97,6 +98,7 @@ public class LFXMessage {
         this.target = null;
         this.size = 0;
         this.atTime = 0;
+        this.incomingHash = 0;
     }
 
     /**
@@ -123,6 +125,7 @@ public class LFXMessage {
         this.sourceNetworkHost = null;
         this.size = 0;
         this.atTime = 0;        
+        this.incomingHash = 0;
     }    
 
     public LFXMessage(Type type, LFXBinaryPath path) {
@@ -142,6 +145,7 @@ public class LFXMessage {
         this.target = null;
         this.size = 0;
         this.atTime = 0;        
+        this.incomingHash = 0;
     }
     
     public LFXMessage(byte[] data) {
@@ -190,7 +194,7 @@ public class LFXMessage {
             // final 
             this.atTime = 0;
             this.payload = null;
-            
+            this.incomingHash = 0;
         } else {        
             this.messageType = getTypeFromMessageData(data);
 
@@ -203,6 +207,7 @@ public class LFXMessage {
             this.size = getSizeFromMessageData(bytes_1);
             this.protocol = getProtocolFromMessageData(bytes_1);
             this.atTime = getAtTimeFromMessageData(bytes_1);
+            this.incomingHash = getHashFromMessageData(bytes_1);
 
             LFXSiteID site_1 = new LFXSiteID(getSiteIDFromMessageData(bytes_1));
 
@@ -236,6 +241,7 @@ public class LFXMessage {
         this.path = path;
         this.payload = other.payload;
         this.sourceNetworkHost = sourceNetworkHost;
+        this.incomingHash = 0;
     }
     
     
@@ -298,6 +304,16 @@ public class LFXMessage {
 
     public Type getType() {
         return messageType;
+    }
+    
+    /**
+     * Returns a hash of the data (excluding the time) from an incoming message.
+     * This is 0 if no hash is available.
+     * 
+     * TODO: remove this?
+     */
+    public int getIncomingHash() {
+        return incomingHash;
     }
 
     public boolean isAResponseMessage() {
@@ -400,6 +416,26 @@ public class LFXMessage {
 
         return StructleTypes.getLongValue(atTimeArray[0], atTimeArray[1], atTimeArray[2], 
                 atTimeArray[3], atTimeArray[4], atTimeArray[5], atTimeArray[6], atTimeArray[7]);
+    }
+    
+    /**
+     * Returns a hash of the message data, excluding the time.
+     */
+    private static int getHashFromMessageData(byte[] _data) {
+        byte[] copy = Arrays.copyOf(_data, _data.length);
+
+        // clear out atTime because that will be different every time even
+        // if the message is the same
+        copy[24] = 0;
+        copy[25] = 0;
+        copy[26] = 0;
+        copy[27] = 0;
+        copy[28] = 0;
+        copy[29] = 0;
+        copy[30] = 0;
+        copy[31] = 0;
+        
+        return LFXByteUtils.byteArrayToHexString(copy).hashCode();
     }
 
     private static byte[] getSiteIDFromMessageData(byte[] data) {

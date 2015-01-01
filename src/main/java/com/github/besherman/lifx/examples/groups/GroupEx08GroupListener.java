@@ -28,7 +28,7 @@ import com.github.besherman.lifx.LFXGroup;
 import com.github.besherman.lifx.LFXGroupCollectionListener;
 
 /**
- *
+ * Creates a listener that prints when groups are added or removed.
  */
 public class GroupEx08GroupListener {
     public static void main(String[] args) throws Exception {

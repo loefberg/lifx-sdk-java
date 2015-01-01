@@ -28,18 +28,24 @@ import com.github.besherman.lifx.LFXInterfaceFirmware;
 import com.github.besherman.lifx.LFXInterfaceStat;
 import com.github.besherman.lifx.LFXLightDetails;
 import com.github.besherman.lifx.LFXVersion;
+import com.github.besherman.lifx.impl.entities.internal.LFXBinaryTypes;
 import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
 import com.github.besherman.lifx.impl.entities.internal.LFXTarget;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocolDevice;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocolLight;
+import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt32;
+import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt64;
 import com.github.besherman.lifx.impl.network.LFXMessageRouter;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -63,7 +69,27 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
     
     private float mcuRailVoltage;
     
-    private Collection<LFXVersion> versions = new HashSet<>();    
+    private Collection<LFXVersion> versions = new ArrayList<>();    
+    
+    private final Set<LxProtocol.Type> messagesUntilLoaded = Collections.synchronizedSet(new HashSet<>(Arrays.asList(
+            // wait for the basic information is loaded
+            LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE,
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_LABEL,
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_POWER,
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TIME,
+    
+            // and until the details are loaded as well    
+            LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE_TEMPERATURE, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_INFO, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_RESET_SWITCH, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_MESH_INFO, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_MESH_FIRMWARE, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_WIFI_INFO, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_WIFI_FIRMWARE, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_VERSION, 
+            LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_MCU_RAIL_VOLTAGE    
+    )));
+    
 
     public LFXLightDetailsImpl(LFXMessageRouter router, LFXTarget target) {
         this.router = router;      
@@ -98,6 +124,16 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
     @Override
     public LFXInterfaceStat getWifiStat() {
         return wifiStat;
+    }
+
+    @Override
+    public LFXInterfaceFirmware getMeshFirmware() {
+        return meshFirmware;
+    }
+
+    @Override
+    public LFXInterfaceFirmware getWifiFirmware() {
+        return wifiFirmware;
     }
 
     @Override
@@ -141,6 +177,9 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
     public void close() {    
     }
     
+    public boolean isLoaded() {
+        return messagesUntilLoaded.isEmpty();
+    }    
     
     public void handleMessage(LFXMessage message) {
         switch (message.getType()) {
@@ -168,9 +207,9 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
             }
             case LX_PROTOCOL_DEVICE_STATE_MESH_FIRMWARE: {
                 LxProtocolDevice.StateMeshFirmware payload = message.getPayload();
-                meshFirmwareDidChangeTo(payload.getBuild().getSignedValue(),
-                        payload.getInstall().getSignedValue(),
-                        payload.getVersion().getValue());
+                meshFirmwareDidChangeTo(payload.getBuild(),
+                        payload.getInstall(),
+                        payload.getVersion());
                 break;
             }
             case LX_PROTOCOL_DEVICE_STATE_WIFI_INFO: {
@@ -181,10 +220,10 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
                 break;
             }
             case LX_PROTOCOL_DEVICE_STATE_WIFI_FIRMWARE: {
-                LxProtocolDevice.StateWifiFirmware payload = message.getPayload();
-                wifiFirmwareDidChangeTo(payload.getBuild().getSignedValue(),
-                        payload.getInstall().getSignedValue(),
-                        payload.getVersion().getValue());
+                LxProtocolDevice.StateWifiFirmware payload = message.getPayload();                
+                wifiFirmwareDidChangeTo(payload.getBuild(),
+                        payload.getInstall(),
+                        payload.getVersion());
                 break;
             }   
             case LX_PROTOCOL_DEVICE_STATE_VERSION: {
@@ -202,6 +241,8 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
             default:
                 break;
         }
+        
+        messagesUntilLoaded.remove(message.getType());
     }    
     
     private void resetSwitchDidChangeTo(int newPosition) {
@@ -238,15 +279,15 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
         pcs.firePropertyChange("wifiStat", old, wifiStat);
     }    
     
-    private void meshFirmwareDidChangeTo(long build, long install, long version) {
+    private void meshFirmwareDidChangeTo(UInt64 build, UInt64 install, UInt32 version) {
         LFXInterfaceFirmware old = meshFirmware;
-        meshFirmware = new LFXInterfaceFirmware(build, install, version);
+        meshFirmware = LFXBinaryTypes.createFirmware(build, install, version);
         pcs.firePropertyChange("meshFirmware", old, meshFirmware);
     }
     
-    private void wifiFirmwareDidChangeTo(long build, long install, long version) {
+    private void wifiFirmwareDidChangeTo(UInt64 build, UInt64 install, UInt32 version) {
         LFXInterfaceFirmware old = wifiFirmware;
-        wifiFirmware = new LFXInterfaceFirmware(build, install, version);
+        wifiFirmware = LFXBinaryTypes.createFirmware(build, install, version);
         pcs.firePropertyChange("wifiFirmware", old, wifiFirmware);
     }
     
@@ -254,7 +295,7 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
         LFXVersion version = new LFXVersion(newProduct, newVendor, newVersion);
         if(!versions.contains(version)) {
             Collection<LFXVersion> old = versions;
-            Collection<LFXVersion> newVersions = new HashSet<>(old);
+            Collection<LFXVersion> newVersions = new ArrayList<>(old);
             newVersions.add(version);
             versions = newVersions;
             pcs.firePropertyChange("versions", old, versions);
@@ -266,7 +307,4 @@ public class LFXLightDetailsImpl implements LFXLightDetails {
         mcuRailVoltage = newVoltage / 1000f;
         pcs.firePropertyChange("mcuRailVoltage", old, mcuRailVoltage);
     }    
-
-    public void tick() {
-    }
 }
