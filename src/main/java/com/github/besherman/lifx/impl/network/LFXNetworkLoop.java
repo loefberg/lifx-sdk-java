@@ -40,7 +40,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -102,7 +102,7 @@ public class LFXNetworkLoop {
     public void open() throws IOException {
         synchronized(openLock) {
             if(!opened.getAndSet(true)) {
-                outgoingQueue = new ArrayBlockingQueue<>(this.outgoingQueueSize);
+                outgoingQueue = new PriorityBlockingQueue<>(this.outgoingQueueSize);
                 router.setOutgoingQueue(outgoingQueue);
                 
                 writer = new Writer(outgoingQueue, messageSendRateLimitInterval);

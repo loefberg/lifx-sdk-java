@@ -319,12 +319,43 @@ public class LFXMessageRouter {
         }
         
         byte[] messageData = message.getMessageDataRepresentation();
-        LFXSocketMessage sm = new LFXSocketMessage(messageData, address);
+        LFXSocketMessage sm = new LFXSocketMessage(messageData, address, getMessagePriority(message));
         if(!outgoingQueue.offer(sm)) {
             Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
                     "Failed to send message, queue is full");
         }         
         responseTracker.trackResponse(message, sm);
+    }
+
+    /**
+     * Give higher priority to SET messages because this is what the user sees
+     * so it improves the experience.
+     */
+    private int getMessagePriority(LFXMessage message) {
+        switch(message.getType()) {
+            case LX_PROTOCOL_DEVICE_SET_SITE: 
+            case LX_PROTOCOL_DEVICE_SET_TIME: 
+            case LX_PROTOCOL_DEVICE_SET_DUMMY_LOAD: 
+            case LX_PROTOCOL_DEVICE_SET_POWER: 
+            case LX_PROTOCOL_DEVICE_SET_LABEL: 
+            case LX_PROTOCOL_DEVICE_SET_TAGS: 
+            case LX_PROTOCOL_DEVICE_SET_TAG_LABELS: 
+            case LX_PROTOCOL_DEVICE_SET_FACTORY_TEST_MODE: 
+            case LX_PROTOCOL_LIGHT_SET: 
+            case LX_PROTOCOL_LIGHT_SET_WAVEFORM: 
+            case LX_PROTOCOL_LIGHT_SET_DIM_ABSOLUTE: 
+            case LX_PROTOCOL_LIGHT_SET_DIM_RELATIVE: 
+            case LX_PROTOCOL_LIGHT_SET_RGBW: 
+            case LX_PROTOCOL_LIGHT_SET_CALIBRATION_COEFFICIENTS: 
+            case LX_PROTOCOL_LIGHT_SET_SIMPLE_EVENT: 
+            case LX_PROTOCOL_LIGHT_SET_POWER: 
+            case LX_PROTOCOL_LIGHT_SET_WAVEFORM_OPTIONAL: 
+            case LX_PROTOCOL_WIFI_SET: 
+            case LX_PROTOCOL_WIFI_SET_ACCESS_POINT: 
+                return LFXSocketMessage.HIGH_PRIORITY;
+        }
+        
+        return LFXSocketMessage.LOW_PRIORITY;
     }
     
     

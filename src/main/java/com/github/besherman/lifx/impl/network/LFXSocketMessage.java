@@ -24,17 +24,28 @@
 package com.github.besherman.lifx.impl.network;
 
 import java.net.InetSocketAddress;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  *
  */
-public class LFXSocketMessage {
+public class LFXSocketMessage implements Comparable<LFXSocketMessage> {
+    public static final int LOW_PRIORITY = 100;
+    public static final int HIGH_PRIORITY = 10;
+    
+    
+    private final long timestamp;
+    private final int priority;
     private final byte[] bytes;
     private final InetSocketAddress address;
 
-    public LFXSocketMessage(byte[] bytes, InetSocketAddress address) {
+    public LFXSocketMessage(byte[] bytes, InetSocketAddress address, int priority) {
         this.bytes = bytes;
         this.address = address;
+        this.priority = priority;
+        this.timestamp = System.nanoTime();
     }
     
     public byte[] getMessageData() {
@@ -43,5 +54,16 @@ public class LFXSocketMessage {
     
     public InetSocketAddress getAddress() {
         return address;
+    }
+
+    /**
+     * Order by priority first then timestamp;
+     */
+    @Override
+    public int compareTo(LFXSocketMessage other) {
+        int comparePrio = Integer.compare(this.priority, other.priority);
+        return comparePrio != 0 
+                ? comparePrio
+                : Long.compare(this.timestamp, other.timestamp);
     }
 }

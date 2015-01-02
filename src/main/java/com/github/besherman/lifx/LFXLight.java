@@ -94,14 +94,12 @@ public interface LFXLight {
     Date getTime();
 
     /**
-     * Returns the lights alarms. This is not guaranteed
-     * to be completely loaded when the light becomes avaliable.
+     * Returns the lights alarms. 
      */
     LFXAlarmCollection getAlarms();
 
     /**
-     * Returns detailed information about the light. This is not guaranteed
-     * to be completely loaded when the light becomes avaliable.
+     * Returns detailed information about the light. 
      */
     LFXLightDetails getDetails();
     
