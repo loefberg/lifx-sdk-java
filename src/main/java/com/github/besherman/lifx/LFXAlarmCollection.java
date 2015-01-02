@@ -28,14 +28,14 @@ import java.util.Iterator;
 
 /**
  * A collection of alarms for a light. The protocol allows for 256 different
- * alarms but at the time of this writing the firmware only supports 2 alarms. 
+ * alarms but the current firmware (1.5) only supports 2 alarms. 
  * See {@link LFXAlarmCollection#size()} for the number of alarms supported. 
  * Note that the light gives a reference to its alarm collection before the 
  * collection is guaranteed to be loaded so if {@link LFXAlarmCollection#size()} 
- * is 0 it is currently being loaded.
+ * is 0 it may still be loading.
  * 
- * The lights are periodically updated but the alarm collection is only loaded 
- * once when the light is discovered. To update the alarms call {@see LFXAlarmCollection#load()}.
+ * The alarm collection is only loaded once when the light is discovered. 
+ * To update the alarms call {@see LFXAlarmCollection#load()}.
  */
 public interface LFXAlarmCollection extends Iterable<LFXAlarm> {
     /**

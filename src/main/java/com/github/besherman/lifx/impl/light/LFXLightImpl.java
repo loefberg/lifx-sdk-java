@@ -144,9 +144,9 @@ public class LFXLightImpl implements LFXLight {
         StructleTypes.UInt32 protocolDuration = new StructleTypes.UInt32(duration);
         LxProtocolLight.Set payload = new LxProtocolLight.Set(stream, protocolColor, protocolDuration);
         LFXMessage message = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_SET, target, payload);        
-        for(int i = 0; i < 3; i++) {
+        //for(int i = 0; i < 3; i++) {
             router.sendMessage(message);
-        }        
+        //}        
         
         colorDidChangeTo(color);        
     }    

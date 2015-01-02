@@ -35,6 +35,7 @@ try {
 }
 ```
 
+For more examples see the example package.
 
 ### Documentation 
 * [Javadoc](http://besherman.github.io/lifx-sdk-java/apidocs/master/index.html) for for the master branch 
@@ -44,4 +45,4 @@ try {
 Version 2.0 not release yet. For the old lifx-sdk-android compatible release see the [release-1.0](https://github.com/besherman/lifx-sdk-java/tree/release-1.0) branch 
 
 ### History
-Version 1.0 of lifx-sdk-java was a simple port of [lifx-sdk-android](https://github.com/LIFX/lifx-sdk-android) and tried to keep as close to the original as possible. But as time has passed lifx-sdk-android has not seen much activity or updates and an official Java implementation does not seem likely. So the upcoming version 2.0 of lifx-sdk-java has been largely rewritten for a simpler codebase and many new features has been implemented. The old version 1.0 branch is still avaliable and  
+Version 1.0 of lifx-sdk-java was a simple port of [lifx-sdk-android](https://github.com/LIFX/lifx-sdk-android) and tried to keep as close to the original as possible. But as time has passed lifx-sdk-android has not seen much activity or updates and an official Java implementation does not seem likely. So the upcoming version 2.0 of lifx-sdk-java has been largely rewritten for a simpler codebase and many new features has been implemented. The old version 1.0 branch is still avaliable.

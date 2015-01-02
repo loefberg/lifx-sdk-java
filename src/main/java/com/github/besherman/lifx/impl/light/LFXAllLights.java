@@ -32,9 +32,7 @@ import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol;
 import com.github.besherman.lifx.impl.network.LFXMessageRouter;
 import com.github.besherman.lifx.impl.network.LFXTimerQueue;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +41,6 @@ import java.util.concurrent.TimeUnit;
  * @author Richard
  */
 public class LFXAllLights implements LFXLightCollection {        
-    private final Map<LFXDeviceID, LFXLightImpl> notLoadedLights = new ConcurrentHashMap<>();
     private final CountDownLatch allLightsLoaded = new CountDownLatch(1);
     private final LFXLightCollectionImpl lights = new LFXLightCollectionImpl();
 
@@ -96,42 +93,25 @@ public class LFXAllLights implements LFXLightCollection {
     public void handleMessage(LFXMessageRouter router, LFXTimerQueue timer, Set<LFXDeviceID> targets, LFXMessage message) {
         for(LFXDeviceID device: targets) {
             LFXLightImpl light = lights.get(device);
-            boolean notLoaded = false;
             if(light == null) {
-                notLoaded = true;
-                light = notLoadedLights.get(device);
-                if(light == null) {
-                    light = new LFXLightImpl(router, timer, device);
-                    router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_LABEL, light.getTarget()));
-                    router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_POWER, light.getTarget()));
-                    router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME, light.getTarget()));
-                    light.getDetails().load();
-                    // note: alarms are not initially loaded here because we
-                    // have to know what version the light is first
-                    notLoadedLights.put(device, light);
-                }
+                light = new LFXLightImpl(router, timer, device);
+                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_LABEL, light.getTarget()));
+                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_POWER, light.getTarget()));
+                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME, light.getTarget()));
+                light.getDetails().load();
             }
             light.handleMessage(message);
             
-            if(notLoaded && light.isLoaded()) {
-                lights.add(light);
-                notLoadedLights.remove(light.getDeviceID());
-            }
+            lights.add(light);
         }
         
-        if(notLoadedLights.isEmpty()) {
+        if(allLightsLoaded.getCount() > 0) {
             for(LFXLight l: lights) {
                 if(((LFXLightImpl)l).isLoaded() == false) {
                     return;
                 }
             }
             allLightsLoaded.countDown();
-        }
-    }
-    
-    public void printReasons() {
-        for(LFXLightImpl light: notLoadedLights.values()) {
-            System.out.println(light.getID() + " " + light.getMessagesUntilLoaded());
         }
     }
     
@@ -147,26 +127,13 @@ public class LFXAllLights implements LFXLightCollection {
                 lights.remove(light);
             } 
         }
-        
-        it = notLoadedLights.keySet().iterator();
-        while(it.hasNext()) {
-            LFXDeviceID id = it.next();
-            LFXLightImpl light = notLoadedLights.get(id);            
-            if(light.isLost()) {
-                light.close();
-                it.remove();
-            } 
-        }
-        
     }
 
     public void clear() {
         lights.clear();
-        notLoadedLights.clear();
     }    
     
-    public LFXLightImpl getLightLodedOrNot(LFXDeviceID deviceID) {
-        LFXLightImpl light = lights.get(deviceID);        
-        return light != null ? light : notLoadedLights.get(deviceID);
+    public LFXLightImpl getLight(LFXDeviceID deviceID) {
+        return lights.get(deviceID);        
     }
 }

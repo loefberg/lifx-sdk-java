@@ -240,7 +240,7 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
 
     private void setLightGroups(Set<LFXDeviceID> targets, Set<LFXTagID> ids) {
         for(LFXDeviceID deviceId: targets) {
-            LFXLightImpl light = allLights.getLightLodedOrNot(deviceId);
+            LFXLightImpl light = allLights.getLight(deviceId);
             for(LFXGroupImpl group: allGroups.values()) {
                 if(ids.contains(group.getTagID())) {
                     group.addImpl(light);
