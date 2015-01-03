@@ -40,6 +40,7 @@ import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.U
 import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt8;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 @SuppressWarnings("unused")
@@ -1377,7 +1378,12 @@ public class LxProtocolLight {
 
             offset += memberData.length;
 
-            char[] labelchars = label.toCharArray();
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
             //byte[] labelBytes = new byte[labelchars.length];
             byte[] labelBytes = new byte[32];
 
@@ -1386,7 +1392,7 @@ public class LxProtocolLight {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;
@@ -1445,7 +1451,12 @@ public class LxProtocolLight {
 
             offset += memberData.length;
             // = name.getBytes();        		
-            char[] labelchars = label.toCharArray();
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
             //byte[] labelBytes = new byte[labelchars.length];
             byte[] labelBytes = new byte[32];
 
@@ -1454,7 +1465,7 @@ public class LxProtocolLight {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;

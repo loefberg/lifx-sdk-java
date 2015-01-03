@@ -39,8 +39,14 @@ public interface LFXGroup extends LFXLightCollection {
     String getLabel();
     
     /**
+     * Returns true if the label is allowed. It may not be null, empty or
+     * longer than 32 bytes.
+     */
+    boolean isLabelAllowed(String newLabel);
+    
+    /**
      * Sets this group's label.
-     * @param label this string can not be empty or longer than 32 characters.
+     * @throws IllegalArgumentException if isLabelAllowed(label) returns false.
      */
     void setLabel(String label);
     

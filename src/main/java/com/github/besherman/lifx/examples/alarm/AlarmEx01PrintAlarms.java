@@ -28,6 +28,7 @@ import com.github.besherman.lifx.LFXAlarmCollection;
 import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXHSBKColor;
 import com.github.besherman.lifx.LFXLight;
+import com.github.besherman.lifx.LFXWaveform;
 
 /**
  * Prints all alarms.
@@ -48,6 +49,7 @@ public class AlarmEx01PrintAlarms {
                     String strColor = String.format("hue=%s, sat=%s, bri=%s, kelvin=%s", 
                             color.getHue(), color.getSaturation(), color.getBrightness(), color.getKelvin());
                     System.out.format("\t%s power=%s color=%s %n", alarm.getTime(), alarm.getPower(), strColor);
+                    System.out.println(alarm.getWaveform().equals(new LFXWaveform()));
                 }
             }
         } finally {

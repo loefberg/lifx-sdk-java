@@ -54,8 +54,14 @@ public interface LFXLight {
     String getLabel();
     
     /**
-     * Sets the lights label.
-     * @param label can not be empty or longer than 32 characters.
+     * Returns true if the label is allowed. It may not be null or
+     * longer than 32 bytes.
+     */
+    boolean isLabelAllowed(String newLabel);
+    
+    /**
+     * Sets this light's label.
+     * @throws IllegalArgumentException if isLabelAllowed(label) returns false.
      */
     void setLabel(String label);
     

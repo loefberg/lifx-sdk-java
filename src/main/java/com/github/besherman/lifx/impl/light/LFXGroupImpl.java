@@ -40,6 +40,7 @@ import com.github.besherman.lifx.impl.network.LFXMessageRouter;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.UnsupportedEncodingException;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -85,14 +86,23 @@ public class LFXGroupImpl implements LFXGroup {
     public String toString() {
         return "GroupImpl{" + "id=" + id + ", label=" + label + '}';
     }
+    
+    @Override
+    public boolean isLabelAllowed(String newLabel) {
+        if(newLabel == null || newLabel.isEmpty()) {
+            return false;
+        }
+        try {
+            return newLabel.getBytes("UTF-8").length <= 32;
+        } catch(UnsupportedEncodingException ex) {
+            throw new InternalError();
+        }
+    }       
 
     @Override
     public void setLabel(String label) {
-        if(label == null) {
-            throw new IllegalArgumentException("label can not be null");
-        }
-        if(label.isEmpty()) {
-            throw new IllegalArgumentException("label can not be empty");
+        if(!isLabelAllowed(label)) {
+            throw new IllegalArgumentException("invalid label");
         }
         setLabelImpl(label);
     }

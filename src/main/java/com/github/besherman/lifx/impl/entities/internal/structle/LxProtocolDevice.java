@@ -36,6 +36,8 @@ import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.U
 import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt32;
 import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt64;
 import com.github.besherman.lifx.impl.entities.internal.structle.StructleTypes.UInt8;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 @SuppressWarnings("unused")
 public class LxProtocolDevice {
@@ -1942,7 +1944,11 @@ public class LxProtocolDevice {
                 subString[i] = member0Data[i];
             }
 
-            label = new String(subString);
+            try {
+                label = new String(subString, "UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
 
         }
 
@@ -1963,7 +1969,13 @@ public class LxProtocolDevice {
         public static void loadMessageDataWithPayloadAtOffset(byte[] messageData, int offset, String label) {
             byte[] memberData;		// = name.getBytes();
 
-            char[] labelchars = label.toCharArray();
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
+            
             //byte[] labelBytes = new byte[labelchars.length];
             byte[] labelBytes = new byte[32];
 
@@ -1972,7 +1984,7 @@ public class LxProtocolDevice {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;
@@ -1998,7 +2010,12 @@ public class LxProtocolDevice {
             byte[] memberData;
 
             // = name.getBytes();        		
-            char[] labelchars = label.toCharArray();
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
             //byte[] labelBytes = new byte[labelchars.length];
             byte[] labelBytes = new byte[32];
 
@@ -2007,7 +2024,7 @@ public class LxProtocolDevice {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;
@@ -2079,24 +2096,19 @@ public class LxProtocolDevice {
             member0Data[30] = bytes[initialOffset + 30];
             member0Data[31] = bytes[initialOffset + 31];
 
-            int endOfStringIndex;
-            byte[] subString;
-
-            endOfStringIndex = member0Data.length;
-
+            int endOfStringIndex = member0Data.length;
             for (int i = 0; i < member0Data.length; i++) {
                 if (member0Data[i] == 0x00) {
                     endOfStringIndex = i;
                     break;
                 }
             }
-
-            subString = new byte[endOfStringIndex];
-            for (int i = 0; i < endOfStringIndex; i++) {
-                subString[i] = member0Data[i];
+            
+            try {
+                label = new String(member0Data, 0, endOfStringIndex, "UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError("UTF-8 is not avaliable as encoding");
             }
-
-            label = new String(subString);
         }
 
         public StateLabel(Object padding, String label) {
@@ -2114,27 +2126,27 @@ public class LxProtocolDevice {
         }
 
         public static void loadMessageDataWithPayloadAtOffset(byte[] messageData, int offset, String label) {
-            byte[] memberData;		// = name.getBytes();
-
-            char[] labelchars = label.toCharArray();
-            //byte[] labelBytes = new byte[labelchars.length];
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }                    
+            
             byte[] labelBytes = new byte[32];
-
             for (int i = 0; i < 32; i++) {
                 labelBytes[i] = 0x00;
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
-            memberData = labelBytes;
-
-            for (int i = 0; i < (memberData.length); i++) {
-                messageData[(offset + i)] = memberData[i];
+            for (int i = 0; i < (labelBytes.length); i++) {
+                messageData[(offset + i)] = labelBytes[i];
             }
 
-            offset += memberData.length;
+            offset += labelBytes.length;
         }
 
         public static void loadMessageDataWithPayloadAtDefaultOffset(byte[] messageData, String label) {
@@ -2145,33 +2157,8 @@ public class LxProtocolDevice {
 
         @Override
         public byte[] getBytes() {
-            int offset = 0;
-
             byte[] bytes = new byte[getPayloadSize()];
-
-            byte[] memberData;
-
-            // = name.getBytes();        		
-            char[] labelchars = label.toCharArray();
-            //byte[] labelBytes = new byte[labelchars.length];
-            byte[] labelBytes = new byte[32];
-
-            for (int i = 0; i < 32; i++) {
-                labelBytes[i] = 0x00;
-            }
-
-            for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
-            }
-
-            memberData = labelBytes;
-
-            for (int i = 0; i < (memberData.length); i++) {
-                bytes[(offset + i)] = memberData[i];
-            }
-
-            offset += memberData.length;
-
+            loadMessageDataWithPayloadAtOffset(bytes, 0, label);
             return bytes;
         }
 
@@ -2566,7 +2553,11 @@ public class LxProtocolDevice {
                 subString[i] = member1Data[i];
             }
 
-            label = new String(subString);
+            try {
+                label = new String(subString, "UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
 
         }
 
@@ -2601,9 +2592,13 @@ public class LxProtocolDevice {
 
             offset += memberData.length;
 
-            // TODO: this is insane - you can't just take the utf-16 code points
-            // and cast them to a byte. FIX IT!
-            char[] labelchars = label.toCharArray();            
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
+            
             byte[] labelBytes = new byte[32];
 
             for (int i = 0; i < 32; i++) {
@@ -2611,7 +2606,7 @@ public class LxProtocolDevice {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;
@@ -2646,7 +2641,13 @@ public class LxProtocolDevice {
 
             offset += memberData.length;
             // = name.getBytes();        		
-            char[] labelchars = label.toCharArray();
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+                
+            }
             //byte[] labelBytes = new byte[labelchars.length];
             byte[] labelBytes = new byte[32];
 
@@ -2655,7 +2656,7 @@ public class LxProtocolDevice {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;
@@ -2757,7 +2758,11 @@ public class LxProtocolDevice {
                 subString[i] = member1Data[i];
             }
 
-            label = new String(subString);
+            try {
+                label = new String(subString, "UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
 
         }
 
@@ -2792,7 +2797,13 @@ public class LxProtocolDevice {
 
             offset += memberData.length;
 
-            char[] labelchars = label.toCharArray();
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();                
+            }
+            
             //byte[] labelBytes = new byte[labelchars.length];
             byte[] labelBytes = new byte[32];
 
@@ -2801,7 +2812,7 @@ public class LxProtocolDevice {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;
@@ -2836,7 +2847,13 @@ public class LxProtocolDevice {
 
             offset += memberData.length;
             // = name.getBytes();        		
-            char[] labelchars = label.toCharArray();
+            byte[] labelchars;
+            try {
+                labelchars = label.getBytes("UTF-8");
+            } catch(UnsupportedEncodingException ex) {
+                throw new InternalError();
+            }
+            
             //byte[] labelBytes = new byte[labelchars.length];
             byte[] labelBytes = new byte[32];
 
@@ -2845,7 +2862,7 @@ public class LxProtocolDevice {
             }
 
             for (int i = 0; i < labelchars.length; i++) {
-                labelBytes[i] = (byte) labelchars[i];
+                labelBytes[i] = labelchars[i];
             }
 
             memberData = labelBytes;

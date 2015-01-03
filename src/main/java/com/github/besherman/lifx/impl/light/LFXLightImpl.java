@@ -41,6 +41,7 @@ import com.github.besherman.lifx.impl.network.LFXTimerQueue;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,9 +97,21 @@ public class LFXLightImpl implements LFXLight {
     }
 
     @Override
+    public boolean isLabelAllowed(String newLabel) {
+        if(newLabel == null) {
+            return false;
+        }
+        try {
+            return newLabel.getBytes("UTF-8").length <= 32;
+        } catch(UnsupportedEncodingException ex) {
+            throw new InternalError();
+        }
+    }       
+
+    @Override
     public void setLabel(String label) {
-        if(label == null) {
-            throw new IllegalArgumentException("label can not be null");
+        if(!isLabelAllowed(label)) {
+            throw new IllegalArgumentException("invalid label");
         }
         
         char[] arr = label.toCharArray();
@@ -144,6 +157,7 @@ public class LFXLightImpl implements LFXLight {
         StructleTypes.UInt32 protocolDuration = new StructleTypes.UInt32(duration);
         LxProtocolLight.Set payload = new LxProtocolLight.Set(stream, protocolColor, protocolDuration);
         LFXMessage message = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_SET, target, payload);        
+        // TODO: how many do we want to send?
         //for(int i = 0; i < 3; i++) {
             router.sendMessage(message);
         //}        
