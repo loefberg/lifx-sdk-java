@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class LFXDefaultLightHandler implements LFXLightHandler {
     private LFXMessageRouter router;
     private final LFXAllLights lights = new LFXAllLights();
-    private final LFXGroupCollectionImpl groups = new LFXGroupCollectionImpl();
+    private final LFXAllGroups groups = new LFXAllGroups();
     private final CountDownLatch routerLatch = new CountDownLatch(1);
     
     private LFXTimerQueue timerQueue;
@@ -57,7 +57,7 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
         return lights;
     }
     
-    public LFXGroupCollectionImpl getGroups() {
+    public LFXAllGroups getGroups() {
         return groups;
     }    
     
@@ -71,8 +71,12 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
         // quickly
         boolean sucess = router.waitForInitPAN(2, TimeUnit.SECONDS);
         if(sucess) {
-            return lights.waitForInitLoaded(timeout, unit);
+            sucess = lights.waitForInitLoaded(timeout, unit);
         } 
+        if(sucess) {
+            // TODO: recalculate the timeout
+            return groups.waitForInitLoaded(timeout, unit);
+        }
         return false;
     }
     
@@ -92,9 +96,12 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
     @Override
     public void open() {
         timerQueue = new LFXTimerQueue();        
-
+        
+        timerQueue.doLater(sendGetGroupLabelsAction, 1, TimeUnit.SECONDS);
+        
         timerQueue.doRepeatedly(sendGetLightInfo, 15, TimeUnit.SECONDS);        
         timerQueue.doRepeatedly(refreshLightsAction, 1, TimeUnit.SECONDS);
+        
         
 //        timerQueue.doRepeatedly(new Runnable() {
 //            @Override
@@ -109,6 +116,10 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
         timerQueue.close();        
     }
     
+    /**
+     * Action that asks all lights about their basic info (what is avaliable directly in the LFXLight class)
+     * This is sent as a broadcast so we should get a response from all lights on the network.
+     */
     private final Runnable sendGetLightInfo = new Runnable() {
         @Override
         public void run() {
@@ -120,16 +131,43 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
             {
                 Set<LFXTagID> allTags = EnumSet.allOf(LFXTagID.class);
                 LxProtocolDevice.GetTagLabels payload = new LxProtocolDevice.GetTagLabels(LFXTagID.pack(allTags));
+                // TODO: is it correct to do this as a broadcast? maybee just ask one
                 LFXMessage msg = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TAG_LABELS, LFXTarget.getBroadcastTarget(), payload);
                 router.sendMessage(msg);                
             }
         }        
     };
     
+    /**
+     * Action that keeps the lights collection updated. It checks for lights
+     * that has not been seen for a while and removes them.
+     */
     private final Runnable refreshLightsAction = new Runnable() {
         @Override
         public void run() {
             lights.removeLostLights();
+        }
+        
+    };
+    
+    /**
+     * Action that makes sure that the tag labels are loaded. Keeps scheduleing
+     * itself until the labels are loaded.
+     * 
+     * TODO: This is a bit stupid, we are spaming the network with messages.
+     *       When we send this message the lights seems to ignore it in favour
+     *       of other messages, so it is not until the message queue is empty
+     *       that the lights even care - how do we do this better?
+     */
+    private final Runnable sendGetGroupLabelsAction = new Runnable() {
+        @Override
+        public void run() {            
+            if(!groups.isLoaded()) {
+                if(!lights.isEmpty()) {                    
+                    router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TAG_LABELS, LFXTarget.getBroadcastTarget()));
+                }
+                timerQueue.doLater(sendGetGroupLabelsAction, 1, TimeUnit.SECONDS);
+            }
         }
         
     };

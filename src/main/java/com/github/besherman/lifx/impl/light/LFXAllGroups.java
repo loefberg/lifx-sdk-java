@@ -39,6 +39,8 @@ import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocolDevic
 import com.github.besherman.lifx.impl.network.LFXMessageRouter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +49,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,15 +66,18 @@ import java.util.logging.Logger;
  * not show up.
  * 
  */
-public class LFXGroupCollectionImpl implements LFXGroupCollection {
+public class LFXAllGroups implements LFXGroupCollection {
     private final Map<LFXTagID, LFXGroupImpl> allGroups = new ConcurrentHashMap<>();
     private final Set<LFXGroupImpl> availableGroups = new CopyOnWriteArraySet<>(); 
     private final Object availableLock = new Object();
     private final List<LFXGroupCollectionListener> listeners = new CopyOnWriteArrayList<>();
+    private final Set<LFXTagID> hasNotReceivedLabel = Collections.synchronizedSet(EnumSet.allOf(LFXTagID.class));
+    private final CountDownLatch allLabelsLoaded = new CountDownLatch(1);
     private LFXAllLights allLights;
     private LFXMessageRouter router;
+   
 
-    public LFXGroupCollectionImpl() {
+    public LFXAllGroups() {
     }
     
     public void setRouter(LFXMessageRouter router) {  
@@ -93,6 +100,7 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
         // Since the tags holds references to lights we have to keep them
         // in sync with the lights collection.
         // 
+        // TODO: leaking listener
         this.allLights.addLightCollectionListener(new LFXLightCollectionListener() {
             @Override public void lightAdded(LFXLight light) {}
             @Override public void lightRemoved(LFXLight light) {
@@ -173,8 +181,7 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
             
             impl.clearImpl();
             updateAvailability(impl);
-        }
-        
+        }        
     }
     
     
@@ -205,6 +212,16 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
         listeners.remove(l);
     }    
     
+    public boolean isLoaded() {
+        return hasNotReceivedLabel.isEmpty();
+    }
+    
+    public boolean waitForInitLoaded(long timeout, TimeUnit unit) throws InterruptedException {
+        allLabelsLoaded.await(timeout, unit);
+        return isLoaded();        
+    }
+    
+    
     public void sendAddLightToGroup(LFXLightImpl light, LFXGroupImpl group) {
         Set<LFXTagID> tags = getTagIDsForLight(light);
         tags.add(group.getTagID());
@@ -223,6 +240,19 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
         }
     }
     
+    /**
+     * Returns all tags that the light has.
+     */
+    public Set<LFXTagID> getTagIDsForLight(LFXLightImpl light) {
+        Set<LFXTagID> result = new HashSet<>();
+        for(LFXGroupImpl group: availableGroups) {
+            if(group.contains(light)) {
+                result.add(group.getTagID());
+            }
+        }
+        return result;
+    }    
+    
     
     public void handleMessage(Set<LFXDeviceID> targets, LFXMessage message) {
         Type type = message.getType();
@@ -232,9 +262,9 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
             setLightGroups(targets, ids);
         } else if(type == LX_PROTOCOL_DEVICE_STATE_TAG_LABELS) {
             LxProtocolDevice.StateTagLabels payload = message.getPayload();
-            Set<LFXTagID> ids = LFXTagID.unpack(payload.getTags());
+            Set<LFXTagID> tags = LFXTagID.unpack(payload.getTags());
             String label = payload.getLabel();
-            setGroupLabels(ids, label);
+            setGroupLabels(tags, label); 
         }        
     }
 
@@ -253,26 +283,22 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
         }                
     }
 
-    private void setGroupLabels(Set<LFXTagID> ids, String label) {
+    private void setGroupLabels(Set<LFXTagID> ids, String label) {        
         for(LFXTagID id: ids) {
             LFXGroupImpl group = allGroups.get(id);
             group.labelDidChangeTo(label);
             updateAvailability(group);
         }
-    }
-    
-    /**
-     * Returns all tags that the light has.
-     */
-    public Set<LFXTagID> getTagIDsForLight(LFXLightImpl light) {
-        Set<LFXTagID> result = new HashSet<>();
-        for(LFXGroupImpl group: availableGroups) {
-            if(group.contains(light)) {
-                result.add(group.getTagID());
+        
+        if(!hasNotReceivedLabel.isEmpty()) {
+            hasNotReceivedLabel.removeAll(ids);
+            if(hasNotReceivedLabel.isEmpty()) {
+                allLabelsLoaded.countDown();
             }
         }
-        return result;
     }
+    
+
     
     
     private void updateAvailability(LFXGroupImpl group) {
@@ -290,7 +316,7 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
             try {
                 l.groupAdded(group);
             } catch(Exception ex) {
-                Logger.getLogger(LFXGroupCollectionImpl.class.getName()).log(Level.SEVERE, 
+                Logger.getLogger(LFXAllGroups.class.getName()).log(Level.SEVERE, 
                         "GroupCollectionListener failed", ex);
             }
         }
@@ -301,10 +327,11 @@ public class LFXGroupCollectionImpl implements LFXGroupCollection {
             try {
                 l.groupRemoved(group);
             } catch(Exception ex) {
-                Logger.getLogger(LFXGroupCollectionImpl.class.getName()).log(Level.SEVERE, 
+                Logger.getLogger(LFXAllGroups.class.getName()).log(Level.SEVERE, 
                         "GroupCollectionListener failed", ex);
             }
         }        
     }    
+
 
 }

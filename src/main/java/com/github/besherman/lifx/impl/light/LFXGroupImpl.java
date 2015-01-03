@@ -52,14 +52,14 @@ import java.util.Set;
 public class LFXGroupImpl implements LFXGroup {
     private final LFXTagID id;
     private final LFXMessageRouter router;
-    private final LFXGroupCollectionImpl groups;
+    private final LFXAllGroups groups;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final LFXLightCollectionImpl lights = new LFXLightCollectionImpl();
     
     private String label = "";
     
 
-    public LFXGroupImpl(LFXMessageRouter router, LFXGroupCollectionImpl groups, LFXTagID id) {        
+    public LFXGroupImpl(LFXMessageRouter router, LFXAllGroups groups, LFXTagID id) {        
         this.id = id;
         this.router = router;
         this.groups = groups;
@@ -232,12 +232,9 @@ public class LFXGroupImpl implements LFXGroup {
      * the light.
      */
     public void setLabelImpl(String label) {
-        // TODO: fix this when you fix broken Lx::Protocol::Device::SetTagLabels
-        char[] arr = label.toCharArray();
-        label = new String(arr, 0, Math.min(arr.length, 32));
-        
         Set<LFXTagID> tag = EnumSet.of(id);
         LxProtocolDevice.SetTagLabels payload = new LxProtocolDevice.SetTagLabels(LFXTagID.pack(tag), label);
+        // note that we send this to all lights
         LFXMessage msg = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_SET_TAG_LABELS, LFXTarget.getBroadcastTarget(), payload);
         for(int i = 0; i < 3; i++) {
             router.sendMessage(msg);                

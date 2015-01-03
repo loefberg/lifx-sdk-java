@@ -97,7 +97,7 @@ public class LFXAllLights implements LFXLightCollection {
                 light = new LFXLightImpl(router, timer, device);
                 router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_LABEL, light.getTarget()));
                 router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_POWER, light.getTarget()));
-                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME, light.getTarget()));
+                router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME, light.getTarget()));                                
                 light.getDetails().load();
             }
             light.handleMessage(message);

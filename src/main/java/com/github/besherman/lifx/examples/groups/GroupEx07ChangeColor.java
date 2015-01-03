@@ -37,9 +37,6 @@ public class GroupEx07ChangeColor {
         LFXClient client = new LFXClient();
         client.open(true);
         try {
-            // have to wait for groups, see #7
-            Thread.sleep(10 * 1000);
-            
             LFXGroup group = client.getGroups().get("Test Group");
             if(group == null) {
                 Logger.getLogger(GroupEx07ChangeColor.class.getName()).log(Level.INFO, "No test group found");

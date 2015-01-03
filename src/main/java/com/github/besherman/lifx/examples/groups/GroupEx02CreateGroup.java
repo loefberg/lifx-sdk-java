@@ -36,9 +36,6 @@ public class GroupEx02CreateGroup {
         LFXClient client = new LFXClient();
         client.open(true);          
         try {        
-            // have to wait for groups, see #7            
-            Thread.sleep(10 * 1000);
-            
             LFXGroup group = client.getGroups().add("Test Group");
             if(group != null) {
                 System.out.format("Created group %s %n", group.getLabel());

@@ -25,28 +25,33 @@ package com.github.besherman.lifx.examples.groups;
 
 import com.github.besherman.lifx.LFXClient;
 import com.github.besherman.lifx.LFXGroup;
+import com.github.besherman.lifx.LFXLight;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Removes the group "Test Group"
+ * Finds the group "Test Group" and removes the first light from it.
  */
-public class GroupEx04RemoveGroup {
+public class GroupEx04RemoveLightFromGroup {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();
         client.open(true);       
         try {
-            // have to wait for groups, see #7
-            Thread.sleep(10 * 1000);
-            
             LFXGroup group = client.getGroups().get("Test Group");
             if(group == null) {
-                Logger.getLogger(GroupEx04RemoveGroup.class.getName()).log(Level.INFO, "No Test Group found");
+                Logger.getLogger(GroupEx04RemoveLightFromGroup.class.getName()).log(Level.INFO, "No Test Group found");
                 return;
             }
 
-            System.out.println("Removing group...");
-            client.getGroups().remove(group);
+            Iterator<LFXLight> it = group.iterator();
+            if(it.hasNext()) {
+                LFXLight light = it.next();
+                System.out.format("Removing light '%s' from group %n", light.getLabel());
+                group.remove(light);
+            } else {
+                Logger.getLogger(GroupEx04RemoveLightFromGroup.class.getName()).log(Level.INFO, "The group has not lights");
+            }
         } finally {
             client.close();
         }

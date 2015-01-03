@@ -34,9 +34,6 @@ public class GroupEx01PrintGroups {
         LFXClient client = new LFXClient();
         client.open(true);
         try {
-            // have to wait for groups, see #7
-            Thread.sleep(10 * 1000);
-            
             for(LFXGroup group: client.getGroups()) {
                 System.out.format("Group '%s' with %s lights %n", group.getLabel(), group.size());
             }
