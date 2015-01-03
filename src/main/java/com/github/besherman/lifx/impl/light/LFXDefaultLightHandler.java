@@ -36,6 +36,8 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -164,6 +166,7 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
         public void run() {            
             if(!groups.isLoaded()) {
                 if(!lights.isEmpty()) {                    
+                    Logger.getLogger(LFXDefaultLightHandler.class.getName()).log(Level.FINE, "Sending GET_TAG_LABELS");
                     router.sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TAG_LABELS, LFXTarget.getBroadcastTarget()));
                 }
                 timerQueue.doLater(sendGetGroupLabelsAction, 1, TimeUnit.SECONDS);

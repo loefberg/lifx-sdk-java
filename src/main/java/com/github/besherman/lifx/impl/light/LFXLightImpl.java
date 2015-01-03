@@ -157,10 +157,8 @@ public class LFXLightImpl implements LFXLight {
         StructleTypes.UInt32 protocolDuration = new StructleTypes.UInt32(duration);
         LxProtocolLight.Set payload = new LxProtocolLight.Set(stream, protocolColor, protocolDuration);
         LFXMessage message = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_SET, target, payload);        
-        // TODO: how many do we want to send?
-        //for(int i = 0; i < 3; i++) {
-            router.sendMessage(message);
-        //}        
+        
+        router.sendMessage(message);
         
         colorDidChangeTo(color);        
     }    
@@ -176,9 +174,8 @@ public class LFXLightImpl implements LFXLight {
         StructleTypes.UInt16 protocolPowerLevel = LFXBinaryTypes.getLFXProtocolPowerLevelFromLFXPowerState(state);
         LxProtocolDevice.SetPower payload = new LxProtocolDevice.SetPower(protocolPowerLevel);
         LFXMessage message = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_SET_POWER, target, payload);
-        for(int i = 0; i < 3; i++) {
-            router.sendMessage(message);
-        }
+        
+        router.sendMessage(message);
         
         powerDidChangeTo(state);
     }

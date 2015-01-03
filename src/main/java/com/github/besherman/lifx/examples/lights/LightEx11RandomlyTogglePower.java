@@ -36,7 +36,7 @@ import java.util.TimerTask;
 /**
  * Randomly change color of all lights.
  */
-public class LightEx10RandomlyBlinkLights {
+public class LightEx11RandomlyTogglePower {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();                        
         client.open(false);
@@ -52,30 +52,17 @@ public class LightEx10RandomlyBlinkLights {
     
     private static class Task extends TimerTask {
         private final LFXLightCollection lights;
-        private final List<Color> colors = Arrays.asList(
-                Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, 
-                Color.ORANGE, Color.PINK, Color.RED, Color.YELLOW);
-        private final Random random = new Random();
-        private volatile Color last;
-
+        private boolean power = true;
         public Task(LFXLightCollection lights) {
             this.lights = lights;
         }
         
         @Override
         public void run() {
-            Color color = null;
-            do {
-                color = colors.get(random.nextInt(colors.size()));
-            } while(color == last);            
-            
-            for(LFXLight light: lights) {
-                if(!light.isPower()) {
-                    light.setPower(true);
-                }                
-                light.setColor(color);
+            power = !power;
+            for(LFXLight light: lights) {                
+                light.setPower(power);                
             }
-            last = color;
         }
         
     }

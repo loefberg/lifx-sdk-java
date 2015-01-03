@@ -25,7 +25,7 @@ package com.github.besherman.lifx.impl.network;
 
 /**
  *
- * @author Richard
+ * 
  */
 public class LFXConstants {    
     /**
@@ -36,7 +36,7 @@ public class LFXConstants {
      */
     public static int getNetworkLoopSendRateLimitInterval() {
         return Integer.parseInt(System.getProperty(
-                "com.github.besherman.lifx.messageSendRateLimitInterval", "150"));        
+                "com.github.besherman.lifx.messageSendRateLimitInterval", "20"));        
     }
     
     /**
@@ -55,7 +55,7 @@ public class LFXConstants {
     /**
      * How long the response tracker waits until it resends a message.     
      */
-    public static int getResponseTrackerTimeout() {
+    public static int getResponseTrackerResendTimeout() {
         return Integer.parseInt(System.getProperty(
                 "com.github.besherman.lifx.responseTrackerTimeout", "500"));        
     }

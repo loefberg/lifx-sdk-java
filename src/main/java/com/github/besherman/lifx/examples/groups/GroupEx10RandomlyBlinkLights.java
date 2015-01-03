@@ -21,28 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.besherman.lifx.examples.lights;
+package com.github.besherman.lifx.examples.groups;
 
 import com.github.besherman.lifx.LFXClient;
-import com.github.besherman.lifx.LFXLight;
-import com.github.besherman.lifx.LFXLightCollection;
+import com.github.besherman.lifx.LFXGroup;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Randomly change color of all lights.
+ * Randomly change color of the test group.
  */
-public class LightEx10RandomlyBlinkLights {
+public class GroupEx10RandomlyBlinkLights {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();                        
-        client.open(false);
+        client.open(true);
         try {
+            LFXGroup group = client.getGroups().get("Test Group");
+            if(group == null) {
+                Logger.getLogger(GroupEx10RandomlyBlinkLights.class.getName()).log(Level.INFO, "No Test Group found");
+                return;
+            }
+            
             Timer timer = new Timer();
-            timer.scheduleAtFixedRate(new Task(client.getLights()), 0, 500);
+            timer.scheduleAtFixedRate(new Task(group), 0, 60);
             Thread.sleep(600000);
             timer.cancel();
         } finally {
@@ -51,16 +58,16 @@ public class LightEx10RandomlyBlinkLights {
     }    
     
     private static class Task extends TimerTask {
-        private final LFXLightCollection lights;
+        private final LFXGroup group;
         private final List<Color> colors = Arrays.asList(
                 Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, 
                 Color.ORANGE, Color.PINK, Color.RED, Color.YELLOW);
         private final Random random = new Random();
         private volatile Color last;
 
-        public Task(LFXLightCollection lights) {
-            this.lights = lights;
-        }
+        public Task(LFXGroup group) {
+            this.group = group;
+        }        
         
         @Override
         public void run() {
@@ -68,13 +75,8 @@ public class LightEx10RandomlyBlinkLights {
             do {
                 color = colors.get(random.nextInt(colors.size()));
             } while(color == last);            
-            
-            for(LFXLight light: lights) {
-                if(!light.isPower()) {
-                    light.setPower(true);
-                }                
-                light.setColor(color);
-            }
+                
+            group.setColor(color, 0);            
             last = color;
         }
         

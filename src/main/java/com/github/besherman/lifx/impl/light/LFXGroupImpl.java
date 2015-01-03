@@ -146,9 +146,8 @@ public class LFXGroupImpl implements LFXGroup {
         StructleTypes.UInt32 protocolDuration = new StructleTypes.UInt32(duration);
         LxProtocolLight.Set payload = new LxProtocolLight.Set(stream, protocolColor, protocolDuration);
         LFXMessage message = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_SET, getTarget(), payload);        
-        for(int i = 0; i < 3; i++) {
-            router.sendMessage(message);
-        }        
+        
+        router.sendMessage(message);
     }
 
     @Override

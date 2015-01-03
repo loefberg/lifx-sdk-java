@@ -41,7 +41,6 @@ import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtoc
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_POWER;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_RESET_SWITCH;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TAGS;
-import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TAG_LABELS;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_TIME;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_VERSION;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_GET_WIFI_FIRMWARE;
@@ -56,7 +55,6 @@ import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtoc
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_POWER;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_RESET_SWITCH;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TAGS;
-import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TAG_LABELS;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_TIME;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_VERSION;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_DEVICE_STATE_WIFI_FIRMWARE;
@@ -64,12 +62,10 @@ import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtoc
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_GET;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_GET_POWER;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_GET_RAIL_VOLTAGE;
-import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_GET_SIMPLE_EVENT;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_GET_TEMPERATURE;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE_POWER;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE_RAIL_VOLTAGE;
-import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE_SIMPLE_EVENT;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_LIGHT_STATE_TEMPERATURE;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_SENSOR_GET_AMBIENT_LIGHT;
 import static com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol.Type.LX_PROTOCOL_SENSOR_GET_DIMMER_VOLTAGE;
@@ -114,7 +110,7 @@ public class LFXResponseTracker {
     
     public void open() {
         timerQueue = new LFXTimerQueue();                
-        responseTrackerTimeout = LFXConstants.getResponseTrackerTimeout();        
+        responseTrackerTimeout = LFXConstants.getResponseTrackerResendTimeout();        
         responseTrackerInterval = LFXConstants.getResponseTrackerInterval();        
         messageSendRateLimitInterval = LFXConstants.getNetworkLoopSendRateLimitInterval();
         
@@ -176,6 +172,7 @@ public class LFXResponseTracker {
                 Expected ex = expectedResponses.poll();
                 if(routingTable.isLightStillAlive(ex.getDeviceID())) {                    
                     ex.reschedule(getTimeout());
+                    Logger.getLogger(LFXResponseTracker.class.getName()).log(Level.FINE, "Resending " + ex.type);
                     if(!outgoingQueue.offer(ex.getMessage())) {
                         Logger.getLogger(LFXResponseTracker.class.getName()).log(Level.SEVERE, 
                                 "Failed to send message, queue is full");
