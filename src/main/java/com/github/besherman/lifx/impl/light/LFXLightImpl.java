@@ -291,13 +291,13 @@ public class LFXLightImpl implements LFXLight {
         pcs.firePropertyChange("label", oldLabel, newLabel);
     }
 
-    private void colorDidChangeTo(LFXHSBKColor newColor) {
+    public void colorDidChangeTo(LFXHSBKColor newColor) {
         LFXHSBKColor oldColor = color;
         color = newColor;
         pcs.firePropertyChange("color", oldColor, newColor);        
     }
 
-    private void powerDidChangeTo(LFXPowerState powerState) {
+    public void powerDidChangeTo(LFXPowerState powerState) {
         boolean oldValue = enabled;
         this.enabled = (powerState == powerState.ON);
         pcs.firePropertyChange("power", oldValue, enabled);

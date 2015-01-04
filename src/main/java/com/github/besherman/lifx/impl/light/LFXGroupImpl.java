@@ -116,6 +116,10 @@ public class LFXGroupImpl implements LFXGroup {
         for(int i = 0; i < 3; i++) {
             router.sendMessage(message);
         }
+        
+        for(LFXLight light: lights) {
+            ((LFXLightImpl)light).powerDidChangeTo(state);
+        }
     }
 
     @Override
@@ -148,6 +152,10 @@ public class LFXGroupImpl implements LFXGroup {
         LFXMessage message = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_SET, getTarget(), payload);        
         
         router.sendMessage(message);
+        
+        for(LFXLight light: lights) {
+            ((LFXLightImpl)light).colorDidChangeTo(color);
+        }        
     }
 
     @Override
