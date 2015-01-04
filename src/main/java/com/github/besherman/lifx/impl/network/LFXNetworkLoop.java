@@ -28,62 +28,23 @@ package com.github.besherman.lifx.impl.network;
  * @author Richard
  */
 
-import com.github.besherman.lifx.impl.entities.internal.LFXByteUtils;
-import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * The network loop handles reading and writing from the network. It is is 
- * responsible for:
- * <ol>
- *    <li>Reading messages from the network and passing them to the {@link LFXMessageRouter}.</li>
- *    <li>Reading messages from the {@link OutgoingQueue} and writing them to the network.</li> 
- *    <li>Passing references of {@link LFXLightHandler} to {@link LFXMessageRouter}. See {@link #addHandler(LightHandler)}</li> 
- * </ol>
+ * 
  */
 public class LFXNetworkLoop {
     private static final int PORT = 56700;    
     private static final Object instanceLock = new Object();
     private static LFXNetworkLoop instance;
     
-    private final LFXMessageRouter router = new LFXMessageRouter();        
-    private final Object openLock = new Object();
-    private final AtomicBoolean opened = new AtomicBoolean(false);
+    private final LFXLightHandlerModel handlers = new LFXLightHandlerModel();
     
-    /**
-     * The time we wait between sending messages. Flooding the network will not
-     * make the lights happy. lifx-sdk-android sets this to 200
-     */
-    private final int messageSendRateLimitInterval;    
+    private LFXNetworkLoopConnection connection;
+    private final Object conLock = new Object();
     
-    private final int outgoingQueueSize;    
-    
-    private BlockingQueue<LFXSocketMessage> outgoingQueue;     
-    
-    private Reader reader;    
-    private Thread readingThread;
-    
-    private Writer writer;
-    private Thread writingThread;        
     
     private LFXNetworkLoop() {        
-        this.messageSendRateLimitInterval = LFXConstants.getNetworkLoopSendRateLimitInterval();        
-        this.outgoingQueueSize = LFXConstants.getOutgoingQueueSize();
     }
     
     public static LFXNetworkLoop getLoop() {
@@ -96,235 +57,36 @@ public class LFXNetworkLoop {
     }
     
     public boolean isOpen() {
-        return opened.get();
+        synchronized(conLock) {
+            return connection != null;
+        }
     }
     
     public void open() throws IOException {
-        synchronized(openLock) {
-            if(!opened.getAndSet(true)) {
-                outgoingQueue = new PriorityBlockingQueue<>(this.outgoingQueueSize);
-                router.setOutgoingQueue(outgoingQueue);
-                
-                writer = new Writer(outgoingQueue, messageSendRateLimitInterval);
-                writingThread = new Thread(writer, "LIFX Network Writer");
-                writingThread.start();                
-                
-                
-                reader = new Reader(writer.getChannel(), router);
-                readingThread = new Thread(reader, "LIFX Network Reader");        
-                readingThread.start();                     
-            } else {
-                Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.INFO, "NetworkLoop already opened");
+        synchronized(conLock) {
+            if(connection == null) {
+                LFXNetworkLoopConnection newConnection = new LFXNetworkLoopConnection(handlers);
+                newConnection.open();
+                connection = newConnection;
             }
         }
     }
         
     public void close() {
-        synchronized(openLock) {
-            if(opened.getAndSet(false)) {
-                reader.close();
-                writer.close();                
-
-                try {
-                    readingThread.join();
-                    writingThread.join();
-                } catch(InterruptedException ex) {
-                    // TODO: maybee we should interrupt the writing thread here?
-                }
-            } else {
-                Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.INFO, "NetworkLoop already closed");
+        synchronized(conLock) {
+            if(connection != null) {
+                connection.close();
+                connection = null;
             }
         }
     }    
     
     public void addHandler(LFXLightHandler handler) {
-        router.addHandler(handler);
+        handlers.addLightHandler(handler);
     }
     
     public void removeHandler(LFXLightHandler handler) {
-        router.removeHandler(handler);
-    }
-    
-    private static class Writer implements Runnable {
-        private static final int BUF_SIZE = 255;
-        private final DatagramChannel channel;
-        private final BlockingQueue<LFXSocketMessage> outgoingQueue;
-        private final AtomicBoolean running = new AtomicBoolean(true);    
-        private final int messageSendRateLimitInterval;
-
-        public Writer(BlockingQueue<LFXSocketMessage> outgoingQueue, int messageSendRateLimitInterval) throws IOException {
-            this.channel = DatagramChannel.open();
-            this.outgoingQueue = outgoingQueue;
-            this.messageSendRateLimitInterval = messageSendRateLimitInterval;
-        }
-        
-        public DatagramChannel getChannel() {
-            return channel;
-        }
-        
-        public void close() {
-            running.set(false);
-        }
-
-        @Override
-        public void run() {
-            ByteBuffer buf = ByteBuffer.allocate(BUF_SIZE);
-            try {
-                // we don't want to stop before the queue is empty because
-                // then the stuff we asked for wont happen and the user
-                // will be confused - we've hopefully stopped the reader though
-                // so nothing new will end up on the queue                
-                while(running.get() || !outgoingQueue.isEmpty()) {
-                    //
-                    // Send outgoing messages
-                    //                    
-                    LFXSocketMessage msg = outgoingQueue.poll(1, TimeUnit.SECONDS);                    
-                    if(msg != null) {
-                        buf.clear();
-                        buf.put(msg.getMessageData());
-                        buf.flip();
-
-                        try {
-                            channel.send(buf, msg.getAddress());
-                        } catch(Exception ex) {
-                            Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                                    "Failed to send message", ex);
-                        }
-
-                        Thread.sleep(messageSendRateLimitInterval);                                            
-                    }                    
-                }                
-            } catch(Exception ex) {
-                Logger.getLogger(Writer.class.getName()).log(Level.SEVERE, "Writer died unexpectadly");
-            } finally {
-                try {
-                    channel.close();
-                } catch(IOException ex) {
-                    Logger.getLogger(Writer.class.getName()).log(Level.SEVERE, 
-                            "Failed to close DatagramChannel", ex);
-                }
-            }
-        }      
-                
-    }
-    
-    private static class Reader implements Runnable {
-        private static final int BUF_SIZE = 255;
-
-        private final AtomicBoolean running = new AtomicBoolean(true);    
-
-        private final Selector selector;
-        private final LFXMessageRouter router;  
-
-        public Reader(DatagramChannel channel, LFXMessageRouter router) throws IOException {            
-            this.router = router;
-            channel.configureBlocking(false);
-            channel.socket().bind(new InetSocketAddress(PORT));
-
-            selector = Selector.open();
-            channel.register(selector, SelectionKey.OP_READ);                    
-        }
-
-        public void close() {                        
-            running.set(false);
-            selector.wakeup();
-        }
-
-        @Override
-        public void run() {
-            Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.FINE, "Starting event loop");        
-            try {
-                router.open();
-                
-                Set<Integer> cache = new HashSet<>();
-
-                ByteBuffer buf = ByteBuffer.allocate(BUF_SIZE);
-                while(running.get()) {
-                    //
-                    // Check for new messages
-                    //
-                    int selected = 0;            
-                    try {
-                        selected = selector.select();
-                    } catch(IOException ex) {
-                        Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                                "Failed to select channel", ex);
-                    } 
-                    
-                    if(selected > 0) {
-                        Set<SelectionKey> keys = selector.selectedKeys();
-                        for(SelectionKey key: keys) {
-                            if(key.isReadable()) {                            
-                                buf.clear();
-                                DatagramChannel ch = (DatagramChannel)key.channel();                        
-                                SocketAddress source = null;
-
-                                try {
-                                    source = ch.receive(buf);
-                                } catch(IOException ex) {
-                                    Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                                            "Failed to receive message", ex);
-                                }   
-
-                                // source is null when receive got nothing
-                                if(source != null) {
-                                    buf.flip();                                
-                                    byte[] bytes = new byte[buf.remaining()];
-                                    buf.get(bytes);
-
-                                    // sometimes we get an empty package for some reason
-                                    if(bytes.length > 0) { 
-                                        String messageAsHex = LFXByteUtils.byteArrayToHexString(bytes);                                        
-                                        
-                                        LFXMessage msg = null;
-                                        try {
-                                            msg = new LFXMessage(bytes);
-                                        } catch(Exception ex) {
-                                            Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                                                    "Failed to parse message: " + messageAsHex, ex);
-                                        }                                    
-
-                                        if(msg != null) {                                            
-                                            try {                                    
-                                                InetAddress addr = ((InetSocketAddress)source).getAddress();
-                                                router.handleMessage(msg.withSource(addr));
-                                            } catch(Exception ex) {
-                                                Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                                                        "Failed to handle message: " + messageAsHex, ex);
-                                            }
-                                        }
-                                    }
-                                } 
-                            }                        
-                        }
-                        keys.clear();
-                    }                    
-                }
-
-            } catch(Exception ex) {
-                // not supposed to end up there
-                Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.SEVERE, 
-                        "Event Loop unexpectedly died", ex);
-            } finally {
-                try {
-                    router.close();
-                } catch(Exception ex) {
-                    Logger.getLogger(Reader.class.getName()).log(Level.SEVERE, 
-                            "Failed to close router", ex);
-                }
-                
-                try {
-                    selector.close();
-                } catch(IOException ex) {
-                    Logger.getLogger(Reader.class.getName()).log(Level.SEVERE, 
-                            "Failed to close selector", ex);
-                }                
-            }
-            
-            Logger.getLogger(LFXNetworkLoop.class.getName()).log(Level.FINE, 
-                    "Stopping event loop");
-        }
-
-    }
+        handlers.removeLightHandler(handler);
+    }    
 }
     

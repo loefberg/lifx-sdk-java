@@ -35,13 +35,15 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Richard
  */
 public class LFXAllLights implements LFXLightCollection {        
-    private final CountDownLatch allLightsLoaded = new CountDownLatch(1);
+    private volatile CountDownLatch allLightsLoaded = new CountDownLatch(1);
     private final LFXLightCollectionImpl lights = new LFXLightCollectionImpl();
 
     @Override
@@ -83,7 +85,18 @@ public class LFXAllLights implements LFXLightCollection {
     @Override
     public void removeLightCollectionListener(LFXLightCollectionListener listener) {
         lights.removeLightCollectionListener(listener);
-    }    
+    } 
+    
+    public void open() {
+    }
+
+    public void close() {
+        clear();
+        
+        // TODO: i am not a fan of this        
+        allLightsLoaded = new CountDownLatch(1);        
+    }
+    
     
     public boolean waitForInitLoaded(long timeout, TimeUnit unit) throws InterruptedException {
         allLightsLoaded.await(timeout, unit);
@@ -102,7 +115,9 @@ public class LFXAllLights implements LFXLightCollection {
             }
             light.handleMessage(message);
             
-            lights.add(light);
+            if(!lights.contains(light)) {
+                lights.add(light);
+            }
         }
         
         if(allLightsLoaded.getCount() > 0) {
@@ -136,4 +151,5 @@ public class LFXAllLights implements LFXLightCollection {
     public LFXLightImpl getLight(LFXDeviceID deviceID) {
         return lights.get(deviceID);        
     }
+
 }

@@ -28,12 +28,36 @@ import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
 import java.util.Set;
 
 /**
- *
- * @author Richard
+ * This is the main interface for handling and keeping track of lights. The
+ * message router takes care of routing messages - the implementation of 
+ * this interface does the rest.
  */
 public interface LFXLightHandler {
+    /**
+     * Sets a new router. This will always be called before open().
+     * @param router a new router or null (which is passed before closing)
+     */
     void setRouter(LFXMessageRouter router);
+    
+    /**
+     * Handles a message from the network.
+     * 
+     * @param targets the recipients of the message, can be empty
+     * @param message the received message
+     */
     void handleMessage(Set<LFXDeviceID> targets, LFXMessage message);    
+    
+    /**
+     * Opens the handler. This will always be called after setRouter() and 
+     * before handleMessage.
+     */
     void open();
+    
+    /**
+     * Closes the handler. After this the handler will not receive any more
+     * messages. Note that after this the router will be set to null. The handler
+     * is not allowed to keep an intance of the router after the handler has
+     * been closed.
+     */
     void close();
 }

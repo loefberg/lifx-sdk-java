@@ -52,49 +52,21 @@ import java.util.logging.Logger;
 public class LFXMessageRouter {    
     private final LFXRoutingTable routingTable = new LFXRoutingTable();    
     private final LFXNetworkSettings networkSettings = new LFXNetworkSettings();    
-    private final List<LFXLightHandler> handlers = new ArrayList();
-    private final AtomicBoolean opened = new AtomicBoolean(false);
+    private final LFXLightHandlerModel handlers;
+    private final BlockingQueue<LFXSocketMessage> outgoingQueue;
     
-    private final CountDownLatch firstPANReceived = new CountDownLatch(1);
-    
+    private final AtomicBoolean opened = new AtomicBoolean(false);    
+    private final CountDownLatch firstPANReceived = new CountDownLatch(1);    
     private final LFXResponseTracker responseTracker = new LFXResponseTracker(routingTable);
     
-    // we have to synchronize the handlers because otherwise it gets hard
-    // to know if a handler should be opened when it is added / closed when
-    // removed
-    private final Object handlerLock = new Object();
     
     private LFXTimerQueue timerQueue;
-    private BlockingQueue<LFXSocketMessage> outgoingQueue;
-
-    public LFXMessageRouter() {
-    }
     
-    // TODO: this is annoying me... should be passed to the constructor
-    public void setOutgoingQueue(BlockingQueue<LFXSocketMessage> outgoingQueue) {
+
+    public LFXMessageRouter(LFXLightHandlerModel handlers, BlockingQueue<LFXSocketMessage> outgoingQueue) {
+        this.handlers = handlers;
         this.outgoingQueue = outgoingQueue;
         this.responseTracker.setOutgoingQueue(outgoingQueue);
-    }
-    
-    public void addHandler(LFXLightHandler handler) {
-        synchronized(handlerLock) {
-            handler.setRouter(this);
-            if(opened.get()) {
-                handler.open();
-            }
-            
-            handlers.add(handler);
-        }
-    }
-    
-    public void removeHandler(LFXLightHandler handler) {
-        synchronized(handlerLock) {
-            handlers.remove(handler);        
-            if(opened.get()) {
-                handler.close();
-            }
-            handler.setRouter(null);
-        }
     }
     
     /**
@@ -111,55 +83,66 @@ public class LFXMessageRouter {
     }
     
     public void open() {
-        synchronized(handlerLock) {
-            if(!opened.getAndSet(true)) {
-                timerQueue = new LFXTimerQueue();  
-                
-                responseTracker.open();
+        if(!opened.getAndSet(true)) {
+            timerQueue = new LFXTimerQueue();  
 
-                for(int i = 0; i < 5; i++) {
-                    timerQueue.doLater(sendGatewayDiscoveryAction, i, TimeUnit.SECONDS);                    
-                }                
+            responseTracker.open();
 
-                timerQueue.doRepeatedly(sendGatewayDiscoveryAction, 15, TimeUnit.SECONDS);
+            for(int i = 0; i < 5; i++) {
+                timerQueue.doLater(sendGatewayDiscoveryAction, i, TimeUnit.SECONDS);                    
+            }                
 
-                for(LFXLightHandler handler: handlers) {
+            timerQueue.doRepeatedly(sendGatewayDiscoveryAction, 15, TimeUnit.SECONDS);
+
+            handlers.forEach(new LFXLightHandlerModelConsumer() {
+                @Override
+                public void accept(LFXLightHandler handler) {
                     try {
+                        handler.setRouter(LFXMessageRouter.this);
                         handler.open();
                     } catch(Exception ex) {
                         Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
                                 "Failed to open LightHandler", ex);
-                    }
+                    }                    
                 }
-            } else {
-                Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
-                        "MessageRouter already opened");
-            }
-        }        
+            });  
+            
+            // TODO: what if a handler was added between previous and next lines?
+            handlers.addLightHandlerModelListener(lightHandlerModelListener);
+            
+        } else {
+            Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
+                    "MessageRouter already opened");
+        }
     }
     
 
     
     public void close() {
-        synchronized(handlerLock) {
-            if(opened.getAndSet(false)) {
-                for(LFXLightHandler handler: handlers) {
+        if(opened.getAndSet(false)) {
+            handlers.removeLightHandlerModelListener(lightHandlerModelListener);
+            
+            handlers.forEach(new LFXLightHandlerModelConsumer() {
+                @Override
+                public void accept(LFXLightHandler handler) {
                     try {
                         handler.close();
+                        handler.setRouter(null);
                     } catch(Exception ex) {
                         Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
                                 "Failed to close LightHandler", ex);
                     }
                 }
-                
-                responseTracker.close();
+            });            
+            
+            
+            responseTracker.close();
 
-                timerQueue.close();        
-            } else {
-                Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
-                        "MessageRouter already closed");
-            }
-        }       
+            timerQueue.close();        
+        } else {
+            Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
+                    "MessageRouter already closed");
+        }
     }    
     
     public void handleMessage(LFXMessage message) { 
@@ -215,17 +198,23 @@ public class LFXMessageRouter {
                 }
             }
             
-            for(LFXLightHandler handler: handlers) {
+            passMessageToHandlers(targets, message);            
+        }        
+    }
+    
+    private void passMessageToHandlers(final Set<LFXDeviceID> targets, final LFXMessage message) {
+        handlers.forEach(new LFXLightHandlerModelConsumer() {
+            @Override
+            public void accept(LFXLightHandler handler) {
                 try {                    
                     handler.handleMessage(targets, message);
                 } catch(Exception ex) {
                     Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
                             "Failed to handle message", ex);
-                }
+                }                
             }
-        }        
+        });                    
     }
-    
 
     
     ////////////////////////////////////////////////////////////////////////////
@@ -386,4 +375,32 @@ public class LFXMessageRouter {
             sendMessage(new LFXMessage(LxProtocol.Type.LX_PROTOCOL_LIGHT_GET, new LFXBinaryPath(site)));                            
         }
     }
+    
+    
+    private final LFXLightHandlerModelListener lightHandlerModelListener = new LFXLightHandlerModelListener() {
+
+        @Override
+        public void handlerAdded(LFXLightHandler handler) {            
+            if(opened.get()) {
+                try {
+                    handler.setRouter(LFXMessageRouter.this);
+                    handler.open();
+                } catch(Exception ex) {
+                    Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
+                            "Failed to open LightHandler", ex);
+                }                
+            }
+        }
+
+        @Override
+        public void handlerRemoved(LFXLightHandler handler) {
+            try {                
+                handler.close();
+                handler.setRouter(null);
+            } catch(Exception ex) {
+                Logger.getLogger(LFXMessageRouter.class.getName()).log(Level.SEVERE, 
+                        "Failed to close LightHandler", ex);
+            }
+        }
+    };
 }

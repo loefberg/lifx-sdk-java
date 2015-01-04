@@ -176,6 +176,7 @@ public class LFXLightImpl implements LFXLight {
         LFXMessage message = new LFXMessage(LxProtocol.Type.LX_PROTOCOL_DEVICE_SET_POWER, target, payload);
         
         router.sendMessage(message);
+        router.sendMessage(message);
         
         powerDidChangeTo(state);
     }

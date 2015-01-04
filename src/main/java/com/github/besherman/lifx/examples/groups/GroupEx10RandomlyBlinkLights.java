@@ -31,7 +31,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -47,6 +50,8 @@ public class GroupEx10RandomlyBlinkLights {
                 Logger.getLogger(GroupEx10RandomlyBlinkLights.class.getName()).log(Level.INFO, "No Test Group found");
                 return;
             }
+
+            group.setPower(true);
             
             Timer timer = new Timer();
             timer.scheduleAtFixedRate(new Task(group), 0, 60);

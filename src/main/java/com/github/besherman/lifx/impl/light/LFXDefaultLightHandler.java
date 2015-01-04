@@ -34,20 +34,20 @@ import com.github.besherman.lifx.impl.network.LFXMessageRouter;
 import com.github.besherman.lifx.impl.network.LFXTimerQueue;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author Richard
+ * 
  */
 public class LFXDefaultLightHandler implements LFXLightHandler {
     private LFXMessageRouter router;
     private final LFXAllLights lights = new LFXAllLights();
     private final LFXAllGroups groups = new LFXAllGroups();
-    private final CountDownLatch routerLatch = new CountDownLatch(1);
+    
+    private boolean open = false;
+    private final Object openLock = new Object();
     
     private LFXTimerQueue timerQueue;
 
@@ -64,29 +64,37 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
     }    
     
     public boolean waitForLoaded(long timeout, TimeUnit unit) throws InterruptedException {
-        routerLatch.await(5, TimeUnit.SECONDS);
-        if(router == null) {
-            throw new IllegalStateException("never got a MessageRouter");
+        Logger.getLogger(LFXDefaultLightHandler.class.getName()).log(Level.FINE, "Waiting for LFXDefaultLightHandler.open()");
+        synchronized(openLock) {
+            if(!open) {
+                openLock.wait(5000);
+            }
+            if(!open) {
+                throw new IllegalStateException("LFXDefaultLightHandler was never opened");
+            }
         }
+        
         
         // wait for the first PAN to be sighted, this should happen fairly
         // quickly
+        Logger.getLogger(LFXDefaultLightHandler.class.getName()).log(Level.FINE, "Waiting for first PAN message");
         boolean sucess = router.waitForInitPAN(2, TimeUnit.SECONDS);
         if(sucess) {
+            Logger.getLogger(LFXDefaultLightHandler.class.getName()).log(Level.FINE, "Waiting for lights isLoaded()");
             sucess = lights.waitForInitLoaded(timeout, unit);
         } 
         if(sucess) {
             // TODO: recalculate the timeout
+            Logger.getLogger(LFXDefaultLightHandler.class.getName()).log(Level.FINE, "Waiting for groups isLoaded()");
             return groups.waitForInitLoaded(timeout, unit);
         }
         return false;
     }
     
     @Override
-    public void setRouter(LFXMessageRouter router) {        
+    public void setRouter(LFXMessageRouter router) {  
         this.router = router;
         groups.setRouter(router);          
-        routerLatch.countDown();
     }    
     
     @Override
@@ -97,6 +105,9 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
 
     @Override
     public void open() {
+        lights.open();
+        groups.open();
+        
         timerQueue = new LFXTimerQueue();        
         
         timerQueue.doLater(sendGetGroupLabelsAction, 1, TimeUnit.SECONDS);
@@ -111,10 +122,22 @@ public class LFXDefaultLightHandler implements LFXLightHandler {
 //                lights.printReasons();
 //            }
 //        }, 1, TimeUnit.SECONDS);
+        
+        synchronized(openLock) {
+            open = true;
+            openLock.notifyAll();
+        }
     }
 
     @Override
     public void close() {
+        lights.close();
+        groups.close();
+        
+        synchronized(openLock) {
+            open = false;
+        }        
+        
         timerQueue.close();        
     }
     

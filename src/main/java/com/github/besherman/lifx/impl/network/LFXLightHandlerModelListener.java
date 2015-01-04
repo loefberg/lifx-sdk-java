@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Richard.
+ * Copyright 2015 Richard.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.besherman.lifx.examples.lights;
-
-import com.github.besherman.lifx.LFXClient;
-import com.github.besherman.lifx.LFXLight;
-import java.util.Date;
+package com.github.besherman.lifx.impl.network;
 
 /**
- * Changes the label on all lights.
+ * Listener of the light handler model that gets informed when handlers are 
+ * added / removed.
  */
-public class LightEx04ChangeLabel {
-    public static void main(String[] args) throws Exception {
-        LFXClient client = new LFXClient();        
-        client.open(true);
-        try {
-            int index = 1;
-            for(LFXLight light: client.getLights()) {
-                String newLabel = String.format("Bulb #%s", index++);
-                System.out.format("Changing label from '%s'  to '%s' %n", light.getLabel(), newLabel);
-                light.setLabel(newLabel);                
-            }            
-        } finally {
-            client.close();
-        }
-    }    
+public interface LFXLightHandlerModelListener {
+    void handlerAdded(LFXLightHandler handler);
+    void handlerRemoved(LFXLightHandler handler);
 }

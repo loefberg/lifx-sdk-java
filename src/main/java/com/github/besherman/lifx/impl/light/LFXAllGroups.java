@@ -72,7 +72,7 @@ public class LFXAllGroups implements LFXGroupCollection {
     private final Object availableLock = new Object();
     private final List<LFXGroupCollectionListener> listeners = new CopyOnWriteArrayList<>();
     private final Set<LFXTagID> hasNotReceivedLabel = Collections.synchronizedSet(EnumSet.allOf(LFXTagID.class));
-    private final CountDownLatch allLabelsLoaded = new CountDownLatch(1);
+    private volatile CountDownLatch allLabelsLoaded = new CountDownLatch(1);
     private LFXAllLights allLights;
     private LFXMessageRouter router;
    
@@ -81,17 +81,7 @@ public class LFXAllGroups implements LFXGroupCollection {
     }
     
     public void setRouter(LFXMessageRouter router) {  
-        this.router = router;
-        
-        if(!allGroups.isEmpty()) {
-            // TODO: this would cause a lot of problems... maybe iterate and
-            // update the router ref?
-            throw new IllegalStateException("not yet implemented");
-        }
-        
-        for(LFXTagID id: LFXTagID.values()) {
-            allGroups.put(id, new LFXGroupImpl(router, this, id));
-        }        
+        this.router = router;        
     }
     
     public void setLights(LFXAllLights lights) {
@@ -211,6 +201,27 @@ public class LFXAllGroups implements LFXGroupCollection {
     public void removeGroupCollectionListener(LFXGroupCollectionListener l) {
         listeners.remove(l);
     }    
+    
+    public void open() {
+        for(LFXTagID id: LFXTagID.values()) {
+            allGroups.put(id, new LFXGroupImpl(router, this, id));
+        }                
+    }
+
+    public void close() {
+        for(LFXTagID id: LFXTagID.values()) {
+            LFXGroupImpl group = allGroups.remove(id);
+            if(group != null && availableGroups.contains(group)) {
+                availableGroups.remove(group);
+                fireGroupRemoved(group);
+            }
+        }     
+        
+        // TODO: i am not a fan of this
+        hasNotReceivedLabel.addAll(EnumSet.allOf(LFXTagID.class));
+        allLabelsLoaded = new CountDownLatch(1);
+    }
+    
     
     public boolean isLoaded() {
         return hasNotReceivedLabel.isEmpty();
@@ -332,6 +343,5 @@ public class LFXAllGroups implements LFXGroupCollection {
             }
         }        
     }    
-
 
 }
