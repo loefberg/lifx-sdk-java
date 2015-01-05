@@ -39,10 +39,10 @@ public class LFXHSBKColor {
     private final int kelvin;				// 0 - 10,000
 
     /**
-     * Creates a new color with a kelvin of 5000.
+     * Creates a new color with a kelvin of 6500 (to match D6500).
      */
     public LFXHSBKColor(Color color) {
-        this(color, 5000);
+        this(color, 6500);
     }
     
     /**
