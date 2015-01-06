@@ -42,7 +42,32 @@ For more examples see the example package.
 * [Protocol documentation](https://docs.google.com/spreadsheets/d/1L4UBEpUuUmWIlIUyGKa9fPxNTEriz3l51T9QisAXi54/edit?usp=sharing) created from reading the source of [LIFX Android SDK](https://github.com/LIFX/lifx-sdk-android) and [LIFX SDK for Objective-C](https://github.com/LIFX/LIFXKit) 
 
 ### Maven
-Version 2.0 not release yet. For the old lifx-sdk-android compatible release see the [release-1.0](https://github.com/besherman/lifx-sdk-java/tree/release-1.0) branch 
+
+#### Version 2.0
+
+[Javadoc for 2.0](http://besherman.github.io/lifx-sdk-java/apidocs/2.0/index.html)
+
+```
+<dependency>
+  <groupId>com.github.besherman</groupId>
+  <artifactId>lifx-sdk-java</artifactId>
+  <version>2.0</version>
+</dependency>
+```
+
+#### Version 1.0
+
+For the old lifx-sdk-android compatible release see the [release-1.0](https://github.com/besherman/lifx-sdk-java/tree/release-1.0) branch 
+
+```
+<dependency>
+  <groupId>com.github.besherman</groupId>
+  <artifactId>lifx-sdk-java</artifactId>
+  <version>1.0.1</version>
+</dependency>
+```
+
+
 
 ### History
 Version 1.0 of lifx-sdk-java was a simple port of [lifx-sdk-android](https://github.com/LIFX/lifx-sdk-android) and tried to keep as close to the original as possible. But as time has passed lifx-sdk-android has not seen much activity or updates and an official Java implementation does not seem likely. So the upcoming version 2.0 of lifx-sdk-java has been largely rewritten for a simpler codebase and many new features has been implemented. The old version 1.0 branch is still avaliable.
