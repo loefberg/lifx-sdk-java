@@ -29,7 +29,7 @@ import java.util.Collection;
 /**
  * Detailed information about a light. The lights are periodically updated
  * but the details is only loaded once when the light is discovered. To update
- * the details call {@see LFXLightDetails#load()}.
+ * the details call {@link LFXLightDetails#load()}.
  */
 public interface LFXLightDetails {
     /**

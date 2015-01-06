@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The message router passes messages between {@link NetworkLoop} and 
+ * The message router passes messages between {@link LFXNetworkLoop} and 
  * {@link LFXLightHandler}. In order to know which light should get what message
  * and where to send messages it also tracks routing information.
  */

@@ -33,7 +33,7 @@ import java.util.Arrays;
  * But it is not the address of the interface that sends us messages. 
  * Current working hypothesis: It's the PAN controller's mesh interface MAC address.
  * 
- * This is part of {@see LFXBinaryPath}.
+ * This is part of {@link LFXBinaryPath}.
  */
 public class LFXSiteID {
     private static final int LFX_SITE_ID_NUMBER_OF_BYTES = 6;

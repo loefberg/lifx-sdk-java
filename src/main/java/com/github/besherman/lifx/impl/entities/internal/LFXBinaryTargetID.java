@@ -45,7 +45,7 @@ import java.util.Set;
  *                                    "&lt;the max address as hex string&gt;"</li>
  * </ul>
  * 
- * This is part of {@see LFXBinaryPath}.
+ * This is part of {@link LFXBinaryPath}.
  */
 public class LFXBinaryTargetID {
     // Canonical representation is a string
@@ -109,12 +109,12 @@ public class LFXBinaryTargetID {
 
 
     /**
-     * Returns this target as a string. To create an instance of this class
-     * from the string value see {@link #getTargetIDWithString(java.lang.String)}.
-     * 
+     * Returns this target as a string. 
+     * <ul>
      * <li>LFXBinaryTargetType.BROADCAST: "*".</li>
      * <li>LFXBinaryTargetType.TAG:       "#&lt;bit field as hex string&gt;"</li>
      * <li>LFXBinaryTargetType.DEVICE:    "&lt;the max address as hex string&gt;"</li>
+     * </ul>
      */
     public String getStringValue() {
         switch (targetType) {

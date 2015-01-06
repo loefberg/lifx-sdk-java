@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * responsible for:
  * <ol>
  *    <li>Reading messages from the network and passing them to the {@link LFXMessageRouter}.</li>
- *    <li>Reading messages from the {@link OutgoingQueue} and writing them to the network.</li> 
+ *    <li>Reading messages from the outgoing queue and writing them to the network.</li> 
  * </ol>
  */
 public class LFXNetworkLoopConnection {

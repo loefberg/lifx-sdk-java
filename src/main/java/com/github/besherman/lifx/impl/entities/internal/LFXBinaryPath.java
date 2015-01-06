@@ -28,9 +28,11 @@ import java.util.Objects;
 
 /**
  * The path to a bulb. This consists of two parts:
+ * <ul>
  * <li>siteID:   The PAN controller that the message will pass through.</li>
  * <li>targetID: The bulb/bulbs that should get the message. This can be a 
  *               broadcast to all bulbs, all bulbs with a tag/tags, or one specific bulb.</li>
+ * </ul>
  */
 public class LFXBinaryPath {
     private final LFXSiteID siteID;

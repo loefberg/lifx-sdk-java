@@ -35,7 +35,7 @@ import java.util.Iterator;
  * is 0 it may still be loading.
  * 
  * The alarm collection is only loaded once when the light is discovered. 
- * To update the alarms call {@see LFXAlarmCollection#load()}.
+ * To update the alarms call {@link LFXAlarmCollection#load()}.
  */
 public interface LFXAlarmCollection extends Iterable<LFXAlarm> {
     /**
