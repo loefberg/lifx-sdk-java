@@ -26,9 +26,7 @@ package com.github.besherman.lifx.examples.alarm;
 import com.github.besherman.lifx.LFXAlarm;
 import com.github.besherman.lifx.LFXAlarmCollection;
 import com.github.besherman.lifx.LFXClient;
-import com.github.besherman.lifx.LFXHSBKColor;
 import com.github.besherman.lifx.LFXLight;
-import com.github.besherman.lifx.LFXWaveform;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,22 +34,22 @@ import java.util.logging.Logger;
 /**
  *
  */
-public class AlarmEx05SetAlarm {
+public class AlarmEx06RescheduleAlarm {
     public static void main(String[] args) throws Exception {
         LFXClient client = new LFXClient();
         client.open(true);
         try {            
             LFXLight light = client.getLights().getLightByLabel("Bulb #2");
             if(light == null) {
-                Logger.getLogger(AlarmEx05SetAlarm.class.getName()).log(Level.INFO, "no light found");
+                Logger.getLogger(AlarmEx06RescheduleAlarm.class.getName()).log(Level.INFO, "No light found");
                 return;
             }
             Date time = new Date(System.currentTimeMillis() + 5 * 1000);
 
-            LFXAlarmCollection alarms = light.getAlarms();                        
-            LFXAlarm alarm = new LFXAlarm(time, true, 1000, new LFXWaveform(0, false, new LFXHSBKColor(240.0f, 1.0f, 1.0f, 6500), 0, 0.5f, (short)0, 1));
-            alarms.set(0, alarm);                                            
-            
+            LFXAlarmCollection alarms = light.getAlarms();    
+            LFXAlarm oldAlarm = alarms.get(0);
+            LFXAlarm newAlarm = oldAlarm.reschedule(time);
+            alarms.set(0, newAlarm);                                            
         } finally {
             client.close();
         }

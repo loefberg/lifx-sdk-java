@@ -178,7 +178,7 @@ public class LFXGroupImpl implements LFXGroup {
     
     @Override
     public LFXLight getLightByLabel(String label) {
-        return lights.getLightByID(label);
+        return lights.getLightByLabel(label);
     }
 
     @Override

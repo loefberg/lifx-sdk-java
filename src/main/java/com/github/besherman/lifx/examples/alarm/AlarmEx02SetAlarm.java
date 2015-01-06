@@ -41,9 +41,6 @@ public class AlarmEx02SetAlarm {
         LFXClient client = new LFXClient();
         client.open(true);
         try {
-            // the alarms takes a while to load
-            Thread.sleep(10 * 1000);
-            
             for(LFXLight light: client.getLights()) {
                 // create an alarm 5 seconds from now that turns the lights
                 // blue over a time of 7 seconds

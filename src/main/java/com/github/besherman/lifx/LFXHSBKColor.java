@@ -28,6 +28,8 @@ import java.awt.Color;
 
 /**
  * Color described by hue, saturation, brightness and kelvin.
+ * 
+ * For saturated colors the kelvin temperature does not appear to matter.
  */
 public class LFXHSBKColor {
     public static final int MIN_KELVIN = 0;

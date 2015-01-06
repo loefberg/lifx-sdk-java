@@ -39,19 +39,24 @@ public class LFXWaveform {
 
     /**
      * Creates a waveform with standard values.
+     * @param alarmDuration the alarms duration in ms
      */
-    public LFXWaveform() {
+    public LFXWaveform(long alarmDuration) {
         this.stream = 0;
         this.transientType = false;
         this.color = new LFXHSBKColor(120, 0, 1, 8000);
-        this.period = 1800000;
+        this.period = 2 * alarmDuration;
         this.cycles = 0.5f;
         this.skewRatio = 0;
         this.waveform = 1;
     }    
-    
-    public LFXWaveform(LFXHSBKColor color) {
-        this(0, false, color, 1800000, 0.5f, (short)0, 1);
+
+    /**
+     * Creates a waveform with color and standard values.
+     * @param alarmDuration the alarms duration in ms
+     */    
+    public LFXWaveform(LFXHSBKColor color, long alarmDuration) {
+        this(0, false, color, 2 * alarmDuration, 0.5f, (short)0, 1);
     }        
     
     /**
@@ -110,7 +115,7 @@ public class LFXWaveform {
     }
 
     /**
-     * Unknown.
+     * This has to be alarm duration (ms) * 2.
      */
     public long getPeriod() {
         return period;

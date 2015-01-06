@@ -44,14 +44,14 @@ public class LFXAlarm {
         this.time = new Date();
         this.power = true;
         this.duration = DEFAULT_DURATION;
-        this.waveform = new LFXWaveform();
+        this.waveform = new LFXWaveform(DEFAULT_DURATION);
     }
     
     /**
      * Creates an alarm that will turn on the light at the given time.
      */
     public LFXAlarm(Date time) {
-        this(time, true, DEFAULT_DURATION, new LFXWaveform());
+        this(time, true, DEFAULT_DURATION, new LFXWaveform(DEFAULT_DURATION));
     }
 
     /**
@@ -59,7 +59,7 @@ public class LFXAlarm {
      * color.
      */
     public LFXAlarm(Date time, LFXHSBKColor color) {
-        this(time, true, DEFAULT_DURATION, new LFXWaveform(color));
+        this(time, true, DEFAULT_DURATION, new LFXWaveform(color, DEFAULT_DURATION));
     }
 
     /**
@@ -70,14 +70,14 @@ public class LFXAlarm {
      * @param duration fade time in milliseconds.
      */
     public LFXAlarm(Date time, LFXHSBKColor color, long duration) {
-        this(time, true, duration, new LFXWaveform(color));
+        this(time, true, duration, new LFXWaveform(color, duration));
     }
     
     /**
      * Creates an alarm that will turn the light on or of at the given time.
      */
     public LFXAlarm(Date time, boolean power) {
-        this(time, power, DEFAULT_DURATION, new LFXWaveform());
+        this(time, power, DEFAULT_DURATION, new LFXWaveform(DEFAULT_DURATION));
     }    
     
     /**
@@ -90,7 +90,7 @@ public class LFXAlarm {
      * @param color the color to set the light to
      */
     public LFXAlarm(Date time, boolean power, long duration, LFXHSBKColor color) {
-        this(time, power, duration, new LFXWaveform(color));
+        this(time, power, duration, new LFXWaveform(color, duration));
     }
 
     /**
@@ -145,7 +145,7 @@ public class LFXAlarm {
     /**
      * Returns true if the light will be turned on when the alarm is triggered.
      */
-    public boolean getPower() {
+    public boolean isPower() {
         return power;
     }
 

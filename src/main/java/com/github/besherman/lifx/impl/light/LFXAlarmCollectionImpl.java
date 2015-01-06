@@ -29,6 +29,7 @@ import com.github.besherman.lifx.LFXHSBKColor;
 import com.github.besherman.lifx.LFXInterfaceFirmware;
 import com.github.besherman.lifx.LFXWaveform;
 import com.github.besherman.lifx.impl.entities.internal.LFXBinaryTypes;
+import com.github.besherman.lifx.impl.entities.internal.LFXByteUtils;
 import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
 import com.github.besherman.lifx.impl.entities.internal.LFXTarget;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol;
@@ -170,6 +171,8 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
     public void handleMessage(LFXMessage message) {
         if(message.getType() == LX_PROTOCOL_LIGHT_STATE_SIMPLE_EVENT) {
             LxProtocolLight.StateSimpleEvent payload = message.getPayload();
+            String hex = LFXByteUtils.byteArrayToHexString(payload.getBytes());
+            
             simpleEventDidChangeTo(payload);
         } else if(message.getType() == LX_PROTOCOL_DEVICE_STATE_WIFI_FIRMWARE) {
             if(!clearForInit.get()) {
@@ -215,7 +218,7 @@ public class LFXAlarmCollectionImpl implements LFXAlarmCollection {
         BigInteger t = BigInteger.valueOf(alarm.getTime().getTime());
         t = t.multiply(new BigInteger("1000000"));
         StructleTypes.UInt64 time = new StructleTypes.UInt64(t);
-        StructleTypes.UInt16 power = new StructleTypes.UInt16(alarm.getPower() ? 1 : 0);
+        StructleTypes.UInt16 power = new StructleTypes.UInt16(alarm.isPower() ? 1 : 0);
         StructleTypes.UInt32 duration = new StructleTypes.UInt32(alarm.getDuration());
         LxProtocolLight.SetSimpleEvent payload = new LxProtocolLight.SetSimpleEvent(idx, time, power, duration, waveform);
         
