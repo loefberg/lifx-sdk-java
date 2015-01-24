@@ -39,6 +39,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -180,7 +182,8 @@ public class LFXRoutingTable {
             }
 
             GatewayEntry gateway = gateways.get(site);
-            if(gateway == null) {                        
+            if(gateway == null) {   
+                Logger.getLogger(LFXRoutingTable.class.getName()).log(Level.FINE, "Found new gateway: {0}", site);
                 gateway = new GatewayEntry(new InetSocketAddress(host, port), site);
                 gateways.put(site, gateway);
                 newGatewayDiscovered = site;
@@ -207,6 +210,7 @@ public class LFXRoutingTable {
             
             LightEntry entry = lights.get(device);
             if(entry == null) {
+                Logger.getLogger(LFXRoutingTable.class.getName()).log(Level.FINE, "Found new light: {0}", device);
                 entry = new LightEntry(device);
                 lights.put(device, entry);
                 newLightDiscovered = device;

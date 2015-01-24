@@ -206,8 +206,6 @@ public class LFXNetworkLoopConnection {
             try {
                 router.open();
                 
-                Set<Integer> cache = new HashSet<>();
-
                 ByteBuffer buf = ByteBuffer.allocate(BUF_SIZE);
                 while(running.get()) {
                     //
@@ -255,6 +253,7 @@ public class LFXNetworkLoopConnection {
                                         }                                    
 
                                         if(msg != null) {                                            
+                                            Logger.getLogger(Reader.class.getName()).log(Level.FINEST, "Received message {0}", msg.getType());
                                             try {                                    
                                                 InetAddress addr = ((InetSocketAddress)source).getAddress();
                                                 router.handleMessage(msg.withSource(addr));

@@ -164,6 +164,27 @@ public class LFXLightImpl implements LFXLight {
     }    
 
     @Override
+    public float getBrightness() {
+        return color != null ? color.getBrightness() : 0;
+    }
+
+    @Override
+    public void setBrightness(float brightness) {
+        if(color != null) {
+            setColor(new LFXHSBKColor(color.getHue(), color.getSaturation(), brightness, color.getKelvin()));            
+        }
+    }
+
+    @Override
+    public void setBrightness(float brightness, long duration) {
+        if(color != null) {
+            setColor(new LFXHSBKColor(color.getHue(), color.getSaturation(), brightness, color.getKelvin()), duration);            
+        }
+    }
+    
+    
+
+    @Override
     public boolean isPower() {
         return enabled;
     }

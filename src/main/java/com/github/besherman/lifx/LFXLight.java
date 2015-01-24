@@ -95,6 +95,25 @@ public interface LFXLight {
     void setColor(Color color, long duration);
     
     /**
+     * Returns the brightness component of the current color.
+     * @return brightness of the lights current color.
+     */
+    float getBrightness();
+    
+    /**
+     * Takes the current color and adjusts the brightness.
+     * @param brightness brightness level in the range [0, 1]
+     */
+    void setBrightness(float brightness);
+    
+    /**
+     * Takes the current color and adjusts the brightness.
+     * @param brightness brightness level in the range [0, 1]
+     * @param duration the fade time in milliseconds.
+     */
+    void setBrightness(float brightness, long duration);
+    
+    /**
      * Returns the lights current time.
      */
     Date getTime();
