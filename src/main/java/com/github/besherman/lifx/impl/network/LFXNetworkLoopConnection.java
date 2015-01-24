@@ -188,6 +188,7 @@ public class LFXNetworkLoopConnection {
         public Reader(DatagramChannel channel, LFXMessageRouter router) throws IOException {            
             this.router = router;
             channel.configureBlocking(false);
+            channel.socket().setReuseAddress(true);
             channel.socket().bind(new InetSocketAddress(PORT));
 
             selector = Selector.open();
