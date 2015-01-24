@@ -23,6 +23,7 @@
  */
 package com.github.besherman.lifx;
 
+import com.github.besherman.lifx.impl.entities.LFXPowerState;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 
@@ -51,10 +52,20 @@ public interface LFXGroup extends LFXLightCollection {
     void setLabel(String label);
     
     /**
+     * Returns the power of all lights in the group.
+     */
+    LFXFuzzyPower getPower();
+    
+    /**
      * Changes the power on all lights in this group.
      */
     void setPower(boolean power);
 
+    /**
+     * Returns the average color of the lights in the group.
+     */
+    LFXHSBKColor getAverageColor();
+    
     /**
      * Sets the color of all lights in this group.
      */

@@ -23,6 +23,7 @@
  */
 package com.github.besherman.lifx.impl.light;
 
+import com.github.besherman.lifx.LFXFuzzyPower;
 import com.github.besherman.lifx.impl.entities.internal.LFXTagID;
 import com.github.besherman.lifx.LFXGroup;
 import com.github.besherman.lifx.LFXHSBKColor;
@@ -41,8 +42,10 @@ import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -108,6 +111,22 @@ public class LFXGroupImpl implements LFXGroup {
     }
 
     @Override
+    public LFXFuzzyPower getPower() {        
+        Iterator<LFXLight> it = iterator();
+        if(it.hasNext()) {
+            boolean power = it.next().isPower();
+            while(it.hasNext()) {
+                if(it.next().isPower() != power) {
+                    return LFXFuzzyPower.MIXED;
+                }
+            }
+            return power ? LFXFuzzyPower.ON : LFXFuzzyPower.OFF;
+        } else {
+            return LFXFuzzyPower.OFF;
+        }
+    }
+    
+    @Override
     public void setPower(boolean power) {
         LFXPowerState state = power ? LFXPowerState.ON : LFXPowerState.OFF;
         StructleTypes.UInt16 protocolPowerLevel = LFXBinaryTypes.getLFXProtocolPowerLevelFromLFXPowerState(state);
@@ -120,6 +139,16 @@ public class LFXGroupImpl implements LFXGroup {
         for(LFXLight light: lights) {
             ((LFXLightImpl)light).powerDidChangeTo(state);
         }
+    }
+
+    @Override
+    public LFXHSBKColor getAverageColor() {
+        List<LFXHSBKColor> colors = new ArrayList<>();
+        for(LFXLight light: lights) {
+            colors.add(light.getColor());
+        }
+        
+        return LFXHSBKColor.averageOfColors(colors.toArray(new LFXHSBKColor[0]));
     }
 
     @Override

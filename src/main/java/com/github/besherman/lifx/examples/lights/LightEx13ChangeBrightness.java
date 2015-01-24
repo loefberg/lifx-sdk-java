@@ -24,17 +24,15 @@
 package com.github.besherman.lifx.examples.lights;
 
 import com.github.besherman.lifx.LFXClient;
-import com.github.besherman.lifx.LFXHSBKColor;
 import com.github.besherman.lifx.LFXLight;
 import com.github.besherman.lifx.LFXLightCollection;
-import java.awt.Color;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Turns on all lights and goes through different color temperatures.
+ * Turns on all lights and goes through color brightness.
  */
 public class LightEx13ChangeBrightness {
     public static void main(String[] args) throws Exception {
