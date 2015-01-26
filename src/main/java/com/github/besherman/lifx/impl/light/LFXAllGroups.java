@@ -201,6 +201,22 @@ public class LFXAllGroups implements LFXGroupCollection {
     public void removeGroupCollectionListener(LFXGroupCollectionListener l) {
         listeners.remove(l);
     }    
+
+    @Override
+    public boolean contains(LFXGroup group) {
+        return get(group.getLabel()) != null;
+    }
+
+    @Override
+    public boolean contains(LFXLight light) {
+        for (LFXGroup group : availableGroups) {
+            if (group.contains(light)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
     public void open() {
         for(LFXTagID id: LFXTagID.values()) {

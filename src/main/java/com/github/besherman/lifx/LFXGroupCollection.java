@@ -63,6 +63,20 @@ public interface LFXGroupCollection extends Iterable<LFXGroup> {
     Iterator<LFXGroup> iterator();
 
     /**
+     * Checks to see if a given group is included in the collection.
+     * @param group the group to search for
+     * @return true if the provided group is included in the colection
+     */
+    boolean contains(LFXGroup group);
+
+    /**
+     * Checks to see if a given light is included in any of the groups in the collection.
+     * @param light the light to search for
+     * @return true if the provided light is included in any of the groups in the collection.
+     */
+    boolean contains(LFXLight light);
+
+    /**
      * Adds a group listener that will be notified when groups are added or 
      * removed.
      */
