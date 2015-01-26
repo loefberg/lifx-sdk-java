@@ -123,6 +123,7 @@ public class LFXNetworkLoopConnection {
 
         public Writer(BlockingQueue<LFXSocketMessage> outgoingQueue, int messageSendRateLimitInterval) throws IOException {
             this.channel = DatagramChannel.open();
+            this.channel.socket().setBroadcast(true);
             this.outgoingQueue = outgoingQueue;
             this.messageSendRateLimitInterval = messageSendRateLimitInterval;
         }
