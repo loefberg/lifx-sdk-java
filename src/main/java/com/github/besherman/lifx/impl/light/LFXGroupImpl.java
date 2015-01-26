@@ -67,6 +67,11 @@ public class LFXGroupImpl implements LFXGroup {
         this.router = router;
         this.groups = groups;
     }
+
+    @Override
+    public String getID() {
+        return getTagID().toString();
+    }
     
     public LFXTagID getTagID() {
         return id;

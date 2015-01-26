@@ -23,7 +23,6 @@
  */
 package com.github.besherman.lifx;
 
-import com.github.besherman.lifx.impl.entities.LFXPowerState;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 
@@ -34,6 +33,11 @@ import java.beans.PropertyChangeListener;
  * using a group.
  */
 public interface LFXGroup extends LFXLightCollection {
+    /**
+     * Returns the group's unique identifier.
+     */
+    String getID();    
+    
     /**
      * Returns the group's label.
      */
