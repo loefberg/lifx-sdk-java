@@ -29,6 +29,7 @@ import com.github.besherman.lifx.LFXLightCollectionListener;
 import com.github.besherman.lifx.impl.entities.internal.LFXDeviceID;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,7 @@ public final class LFXLightCollectionImpl implements LFXLightCollection {
     }
     
     public Iterator<LFXDeviceID> keyIterator() {
-        return lights.keySet().iterator();
+        return Collections.unmodifiableSet(lights.keySet()).iterator();
     }
     
     public void clear() {

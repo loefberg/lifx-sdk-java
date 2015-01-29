@@ -290,8 +290,10 @@ public class LFXAllGroups implements LFXGroupCollection {
         } else if(type == LX_PROTOCOL_DEVICE_STATE_TAG_LABELS) {
             LxProtocolDevice.StateTagLabels payload = message.getPayload();
             Set<LFXTagID> tags = LFXTagID.unpack(payload.getTags());
-            String label = payload.getLabel();
-            setGroupLabels(tags, label); 
+            String label = payload.getLabel();            
+            if(targets.size() == 1) {
+                setGroupLabels(targets.iterator().next(), tags, label); 
+            }
         }        
     }
 
@@ -310,11 +312,13 @@ public class LFXAllGroups implements LFXGroupCollection {
         }                
     }
 
-    private void setGroupLabels(Set<LFXTagID> ids, String label) {        
+    private void setGroupLabels(LFXDeviceID source, Set<LFXTagID> ids, String label) {        
         for(LFXTagID id: ids) {
             LFXGroupImpl group = allGroups.get(id);
-            group.labelDidChangeTo(label);
-            updateAvailability(group);
+            if(group.contains(source)) {
+                group.labelDidChangeTo(label);
+                updateAvailability(group);
+            } 
         }
         
         if(!hasNotReceivedLabel.isEmpty()) {

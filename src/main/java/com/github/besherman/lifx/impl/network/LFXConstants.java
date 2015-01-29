@@ -24,8 +24,8 @@
 package com.github.besherman.lifx.impl.network;
 
 /**
- *
- * 
+ * These are settings specific to the network related code. For light related
+ * settings see LFXLightConstants.
  */
 public class LFXConstants {    
     /**

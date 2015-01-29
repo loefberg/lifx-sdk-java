@@ -79,7 +79,8 @@ public class LFXLightImpl implements LFXLight {
         this.router = router;        
         this.alarms = new LFXAlarmCollectionImpl(router, new LFXTarget(deviceID));
         this.details = new LFXLightDetailsImpl(router, new LFXTarget(deviceID));        
-        this.lightLostTimeout = Integer.parseInt(System.getProperty("com.github.besherman.lifx.dh.lightLostTimeout", "20000"));
+        this.lightLostTimeout = LFXLightConstants.getLightLostTimeout();
+        this.lastSeenTimestamp = System.currentTimeMillis();        
     }
 
     @Override

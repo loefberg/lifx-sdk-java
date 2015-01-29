@@ -31,6 +31,7 @@ import com.github.besherman.lifx.LFXLight;
 import com.github.besherman.lifx.LFXLightCollectionListener;
 import com.github.besherman.lifx.impl.entities.LFXPowerState;
 import com.github.besherman.lifx.impl.entities.internal.LFXBinaryTypes;
+import com.github.besherman.lifx.impl.entities.internal.LFXDeviceID;
 import com.github.besherman.lifx.impl.entities.internal.LFXMessage;
 import com.github.besherman.lifx.impl.entities.internal.LFXTarget;
 import com.github.besherman.lifx.impl.entities.internal.structle.LxProtocol;
@@ -298,6 +299,10 @@ public class LFXGroupImpl implements LFXGroup {
     public boolean contains(LFXLight light) {
         return lights.contains(light);
     }
+    
+    public boolean contains(LFXDeviceID device) {
+        return lights.get(device) != null;
+    }    
 
     @Override
     public Iterator<LFXLight> iterator() {

@@ -38,11 +38,7 @@ public class GroupEx03AddLightsToGroup {
         LFXClient client = new LFXClient();
         client.open(true);       
         try {
-            LFXGroup group = client.getGroups().get("Test Group");
-            if(group == null) {
-                Logger.getLogger(GroupEx03AddLightsToGroup.class.getName()).log(Level.INFO, "No Test Group found");
-                return;
-            }
+            LFXGroup group = client.getGroups().add("Test Group");
 
             Iterator<LFXLight> it = client.getLights().iterator();
             if(!it.hasNext()) {
