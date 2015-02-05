@@ -61,12 +61,16 @@ public class LFXNetworkSettings {
     
     private static InetAddress getFirstActiveBroadcast() throws SocketException {
         NetworkInterface iface = getFirstActiveIPv4Interface();
-        for(InterfaceAddress ifaceAddr: iface.getInterfaceAddresses()) {
-            InetAddress addr = ifaceAddr.getAddress();
-            if(addr instanceof Inet4Address) {
-                return ifaceAddr.getBroadcast();
+
+        if (iface != null) {
+            for (InterfaceAddress ifaceAddr : iface.getInterfaceAddresses()) {
+                InetAddress addr = ifaceAddr.getAddress();
+                if (addr instanceof Inet4Address) {
+                    return ifaceAddr.getBroadcast();
+                }
             }
         }
+
         return null;
     }
     
