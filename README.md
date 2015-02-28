@@ -1,4 +1,4 @@
-*** The lifx firmware update 2.0 seems to break a few things, we are waiting for the LIFX team to update LIFXKit. In the meantime please try the old 1.0.1 release if you are having problems. ***
+**The lifx firmware update 2.0 seems to break a few things, we are waiting for the LIFX team to update LIFXKit. In the meantime please try the old 1.0.1 release if you are having problems.**
 
 lifx-sdk-java aims to be a feature complete implementation of the LIFX protocol for Java. It supports turning lights on/off, colors, labels, groups and alarms (persisted in the bulb).
 
