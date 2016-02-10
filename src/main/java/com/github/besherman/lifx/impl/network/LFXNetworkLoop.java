@@ -42,6 +42,7 @@ public class LFXNetworkLoop {
     
     private LFXNetworkLoopConnection connection;
     private final Object conLock = new Object();
+    private String broadcastAddress = null;
     
     
     private LFXNetworkLoop() {        
@@ -65,7 +66,7 @@ public class LFXNetworkLoop {
     public void open() throws IOException {
         synchronized(conLock) {
             if(connection == null) {
-                LFXNetworkLoopConnection newConnection = new LFXNetworkLoopConnection(handlers);
+                LFXNetworkLoopConnection newConnection = new LFXNetworkLoopConnection(broadcastAddress, handlers);
                 newConnection.open();
                 connection = newConnection;
             }
@@ -80,6 +81,10 @@ public class LFXNetworkLoop {
             }
         }
     }    
+
+    public void setBroadcastAddress(String broadcastAddress) {
+        this.broadcastAddress = broadcastAddress;
+    }
     
     public void addHandler(LFXLightHandler handler) {
         handlers.addLightHandler(handler);
