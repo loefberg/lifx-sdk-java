@@ -42,6 +42,14 @@ public class LFXClient {
         loop = LFXNetworkLoop.getLoop();
         loop.addHandler(lightHandler);
     }
+
+    /**
+     * Creates a new client.
+     */
+    public LFXClient(String broadcastAddress) {
+				this();
+				loop.setBroadcastAddress(broadcastAddress);
+    }
     
     /**
      * Returns the collection of lights.

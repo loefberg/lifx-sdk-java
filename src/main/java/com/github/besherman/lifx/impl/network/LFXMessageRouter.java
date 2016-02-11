@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  */
 public class LFXMessageRouter {    
     private final LFXRoutingTable routingTable = new LFXRoutingTable();    
-    private final LFXNetworkSettings networkSettings = new LFXNetworkSettings();    
+    private final LFXNetworkSettings networkSettings;
     private final LFXLightHandlerModel handlers;
     private final BlockingQueue<LFXSocketMessage> outgoingQueue;
     
@@ -63,7 +63,8 @@ public class LFXMessageRouter {
     private LFXTimerQueue timerQueue;
     
 
-    public LFXMessageRouter(LFXLightHandlerModel handlers, BlockingQueue<LFXSocketMessage> outgoingQueue) {
+    public LFXMessageRouter(String broadcastAddress, LFXLightHandlerModel handlers, BlockingQueue<LFXSocketMessage> outgoingQueue) {
+        networkSettings = new LFXNetworkSettings(broadcastAddress);
         this.handlers = handlers;
         this.outgoingQueue = outgoingQueue;
         this.responseTracker.setOutgoingQueue(outgoingQueue);

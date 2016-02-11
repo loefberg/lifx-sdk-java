@@ -68,12 +68,12 @@ public class LFXNetworkLoopConnection {
     private Writer writer;
     private Thread writingThread;        
     
-    public LFXNetworkLoopConnection(LFXLightHandlerModel handlers) {        
+    public LFXNetworkLoopConnection(String broadcastAddress, LFXLightHandlerModel handlers) {
         this.messageSendRateLimitInterval = LFXConstants.getNetworkLoopSendRateLimitInterval();        
         int outgoingQueueSize = LFXConstants.getOutgoingQueueSize();
         
         this.outgoingQueue = new PriorityBlockingQueue<>(outgoingQueueSize);
-        this.router = new LFXMessageRouter(handlers, outgoingQueue);
+        this.router = new LFXMessageRouter(broadcastAddress, handlers, outgoingQueue);
     }
     
     

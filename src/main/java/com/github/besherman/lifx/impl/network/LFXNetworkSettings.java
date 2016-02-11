@@ -30,6 +30,7 @@ import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 /**
@@ -41,18 +42,24 @@ public class LFXNetworkSettings {
     
     private final int broadcastPort = 56700;
     private final int peerToPeerPort = 56750;
+    private final String broadcastAddressString;
     
-    
-    public LFXNetworkSettings() {
-        
+    public LFXNetworkSettings(String broadcastAddressString) {
+        this.broadcastAddressString = broadcastAddressString;
     }
 
     /**
      * Returns the broadcast address that sockets should use.
      */
-    public synchronized InetSocketAddress getBroadcast() throws SocketException {
+    public synchronized InetSocketAddress getBroadcast() throws SocketException, UnknownHostException {
         if(broadcastAddress == null) {
-            broadcastAddress = new InetSocketAddress(getFirstActiveBroadcast(), broadcastPort);
+            if (broadcastAddressString == null) {
+                broadcastAddress = new InetSocketAddress(getFirstActiveBroadcast(), broadcastPort);
+            }
+            else {
+                InetAddress addr = InetAddress.getByName(broadcastAddressString);
+                broadcastAddress = new InetSocketAddress(addr, broadcastPort);
+            }
         }
         return broadcastAddress;
     }
